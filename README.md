@@ -18,10 +18,6 @@
   - Energia Minerada
   - Jogo terminado
 
-- Memoria :   (aleixo)
-  - djajdwa 
-
-
 
 ## Tutorial Git (Fork, Pull Requests, Merge...)
 - No **VSCode** instalem a extensão **GitHub Pull Requests and Issues** ![ ](git-tutorial/pullreq_ext.PNG) 
