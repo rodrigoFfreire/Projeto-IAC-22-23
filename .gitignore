@@ -1,7 +1,6 @@
-*
-
+/*
 !.gitignore
-!.asm
-!.cir
-!.md
-!Git-Tutorial/
+!**.asm
+!**.cir
+!**.md
+!/git-tutorial
