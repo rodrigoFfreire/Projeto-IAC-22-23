@@ -5,18 +5,20 @@
 2. [Tutorial Git](#Tutorial-Git)
 
 ## TODO (Lista de coisas para fazer)
-- Cenarios de Fundo:    (Rodas)
-  - Main menu
-  - Video de fundo durante o jogo
-  - Texto de Pausa
-  - Jogo Terminado
-  - Nave Explodiu
+- [ ] Cenarios de Fundo:    (Rodas)
+  - [ ] Main menu
+  - [ ] Video de fundo durante o jogo
+  - [ ] Texto de Pausa
+  - [ ] Jogo Terminado
+  - [ ] Nave Explodiu
 <br/><br/>
-- Sound Effects:    (Rodas)
-  - ~~Sonda Lançada~~
-  - ~~Asteroide Destruido~~
-  - Energia Minerada
-  - Jogo terminado
+- [X] Sound Effects:    (Rodas)
+  - [X] Sonda Lançada
+  - [X] Asteroide Destruido
+  - [X] Energia Minerada
+  - [X] Som de Pausa/Retomar
+  - [X] Nave Destruida
+  - [X] Jogo terminado
 
 
 ## Tutorial Git (Fork, Pull Requests, Merge...)
