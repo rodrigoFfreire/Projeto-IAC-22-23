@@ -13,8 +13,8 @@
   - Nave Explodiu
 <br/><br/>
 - Sound Effects:    (Rodas)
-  - Sonda Lançada
-  - Asteroide Destruido
+  - ~~Sonda Lançada~~
+  - ~~Asteroide Destruido~~
   - Energia Minerada
   - Jogo terminado
 
