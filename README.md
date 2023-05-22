@@ -6,7 +6,7 @@
 
 ## TODO (Lista de coisas para fazer)
 - [ ] Cenarios de Fundo:    (Rodas)
-  - [ ] Main menu
+  - [X] Main menu
   - [ ] Video de fundo durante o jogo
   - [ ] Texto de Pausa
   - [ ] Jogo Terminado
