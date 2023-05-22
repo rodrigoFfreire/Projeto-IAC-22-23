@@ -1,5 +1,10 @@
 # Projeto-IAC-22-23
 
+# Indice
+1. [Tutorial Git](#Tutorial-Git)
+2. [TODO](#TODO) 
+
+
 ## Tutorial Git (Fork, Pull Requests, Merge...)
 - No **VSCode** instalem a extensão **GitHub Pull Requests and Issues** ![ ](git-tutorial/pullreq_ext.PNG) 
 - Fazer **Fork** deste projeto 
@@ -10,3 +15,7 @@
 - Quando tiverem dado **push** e quiserem submeter partes do projeto já prontas têm que fazer um **Pull Request**
   - Vão onde diz **Github: Pull Requests**. Aquilo vai aparecer um botao com um simbolo para adicionar cliquem nisso ![ ](git-tutorial/pullreq1.PNG)
   - E verifiquem se esta tudo certo como na imagem, ponham um titulo e descricao a dizer o que é que fizeram e tal etc.... ![ ](git-tutorial/pullreq2.PNG)
+
+
+## TODO
+- ...
