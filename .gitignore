@@ -3,5 +3,7 @@
 !**.asm
 !**.cir
 !**.md
+!**.jar
 !/git-tutorial
 !/src
+!/src/assets
