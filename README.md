@@ -1,8 +1,13 @@
 # Projeto-IAC-22-23
 
 # Indice
-1. [Tutorial Git](#Tutorial-Git)
-2. [TODO](#TODO) 
+1. [TODO](#TODO) 
+2. [Tutorial Git](#Tutorial-Git)
+
+## TODO (Lista de coisas para fazer)
+- matar matumbos
+- ...
+- ...
 
 
 ## Tutorial Git (Fork, Pull Requests, Merge...)
@@ -15,7 +20,3 @@
 - Quando tiverem dado **push** e quiserem submeter partes do projeto já prontas têm que fazer um **Pull Request**
   - Vão onde diz **Github: Pull Requests**. Aquilo vai aparecer um botao com um simbolo para adicionar cliquem nisso ![ ](git-tutorial/pullreq1.PNG)
   - E verifiquem se esta tudo certo como na imagem, ponham um titulo e descricao a dizer o que é que fizeram e tal etc.... ![ ](git-tutorial/pullreq2.PNG)
-
-
-## TODO
-- ...
