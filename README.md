@@ -18,6 +18,9 @@
   - Energia Minerada
   - Jogo terminado
 
+- Memoria :   (aleixo)
+  - djajdwa 
+
 
 
 ## Tutorial Git (Fork, Pull Requests, Merge...)
