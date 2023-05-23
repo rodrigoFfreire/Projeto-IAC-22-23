@@ -22,6 +22,8 @@
   - [X] Som de Pausa/Retomar
   - [X] Nave Destruida
   - [X] Jogo terminado
+<br/><br/>
+- [ ] Teclado   (Rodas)
 
 
 ## Tutorial Git (Fork, Pull Requests, Merge...)
