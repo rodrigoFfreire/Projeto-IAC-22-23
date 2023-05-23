@@ -12,7 +12,7 @@
 - [ ] Painel de instrumentos
 - [X] Cenario de fundo
 - [ ] Asteroide no topo esquerdo que desce na diagonal....(ver pdf) {Tecla 5}
-- [ ] Efeito sonoro quando o asteroide desce
+- [X] Efeito sonoro quando o asteroide desce
 - [ ] Sonda na direção do meio a subir...(ver pdf) {Tecla 1}
 - [ ] Teclas para incrementar ou decrementar o valor dos displays {Tecla 6(+), Tecla 4(-)}
 
