@@ -13,6 +13,7 @@
   - [X] Texto de Pausa
   - [X] Jogo Terminado
   - [X] Nave Explodiu
+  - [X] Nave sem Energia
 <br/><br/>
 - [X] Sound Effects:    (Rodas)
   - [X] Sonda Lançada
