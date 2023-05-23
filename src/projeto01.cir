@@ -1525,7 +1525,7 @@
     "windowScreenWidthPixels" : 1024,
     "windowScreenHeightixels" : 512,
     "defaultPenColor" : 65280,
-    "image paths" : [ "assets/images/dead.png", "assets/images/game_over.png", "assets/images/main_menu.png", "assets/images/paused_overlay.png" ],
+    "image paths" : [ "assets/images/dead.png", "assets/images/game_over.png", "assets/images/main_menu.png", "assets/images/paused_overlay.png", "assets/images/no_energy.png" ],
     "sounds/videos settings" : [ {
       "filePathName" : "assets/sounds/asteroid_explosion.wav",
       "relative sound volume" : 0.68,
