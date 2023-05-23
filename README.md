@@ -3,8 +3,20 @@
 
 
 # Indice
-1. [TODO](#TODO) 
-2. [Tutorial Git](#Tutorial-Git)
+1. [CheckList Versao intermedia](#CheckList-Versao-Intermedia)
+2. [TODO](#TODO) 
+3. [Tutorial Git](#Tutorial-Git)
+
+## CheckList Versao Intermedia
+- [ ] Teclado completamente functional (Rodas)
+- [ ] Painel de instrumentos
+- [X] Cenario de fundo
+- [ ] Asteroide no topo esquerdo que desce na diagonal....(ver pdf) {Tecla 5}
+- [ ] Efeito sonoro quando o asteroide desce
+- [ ] Sonda na direção do meio a subir...(ver pdf) {Tecla 1}
+- [ ] Teclas para incrementar ou decrementar o valor dos displays {Tecla 6(+), Tecla 4(-)}
+
+<br/><br/>
 
 ## TODO (Lista de coisas para fazer)
 - [X] Cenarios de Fundo:    (Rodas)
@@ -22,8 +34,6 @@
   - [X] Som de Pausa/Retomar
   - [X] Nave Destruida
   - [X] Jogo terminado
-<br/><br/>
-- [ ] Teclado   (Rodas)
 
 
 ## Tutorial Git (Fork, Pull Requests, Merge...)
