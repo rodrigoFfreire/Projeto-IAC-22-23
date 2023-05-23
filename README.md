@@ -8,7 +8,7 @@
 3. [Tutorial Git](#Tutorial-Git)
 
 ## CheckList Versao Intermedia
-- [ ] Teclado completamente functional (Rodas)
+- [ ] Teclado completamente functional (Rodas) - WORKING...
 - [ ] Painel de instrumentos
 - [X] Cenario de fundo
 - [ ] Asteroide no topo esquerdo que desce na diagonal....(ver pdf) {Tecla 5}
