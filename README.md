@@ -7,12 +7,12 @@
 2. [Tutorial Git](#Tutorial-Git)
 
 ## TODO (Lista de coisas para fazer)
-- [ ] Cenarios de Fundo:    (Rodas)
+- [X] Cenarios de Fundo:    (Rodas)
   - [X] Main menu
-  - [ ] Video de fundo durante o jogo
-  - [ ] Texto de Pausa
-  - [ ] Jogo Terminado
-  - [ ] Nave Explodiu
+  - [X] Video de fundo durante o jogo
+  - [X] Texto de Pausa
+  - [X] Jogo Terminado
+  - [X] Nave Explodiu
 <br/><br/>
 - [X] Sound Effects:    (Rodas)
   - [X] Sonda Lançada

@@ -1,7 +1,7 @@
 {
   "comment" : "This is a JSON file describing a digital circuit, which can be loaded into the SEPE (Simulador Especial Para Ensino), a computer architecture simulator.",
-  "savedWithSimulatorVersion" : "2.2.0",
-  "savedWithSimulatorBuildOn" : "2023-03-27  at  16:15:44",
+  "savedWithSimulatorVersion" : "2.2.1",
+  "savedWithSimulatorBuildOn" : "2023-05-16  at  14:54:44",
   "editorLocked" : true,
   "startAutomatically" : true,
   "showConnectionColors" : false,
@@ -28,7 +28,7 @@
       "sourcePinID" : 29,
       "targetPinID" : 39,
       "points" : [ {
-        "X" : 395,
+        "X" : 394,
         "Y" : 439
       }, {
         "X" : 420,
@@ -50,7 +50,7 @@
       "sourcePinID" : 30,
       "targetPinID" : 40,
       "points" : [ {
-        "X" : 395,
+        "X" : 394,
         "Y" : 459
       }, {
         "X" : 436,
@@ -97,7 +97,7 @@
         "X" : 805,
         "Y" : 207
       }, {
-        "X" : 406,
+        "X" : 405,
         "Y" : 207
       } ]
     }, {
@@ -113,7 +113,7 @@
         "X" : 720,
         "Y" : 207
       }, {
-        "X" : 406,
+        "X" : 405,
         "Y" : 207
       } ]
     }, {
@@ -129,7 +129,7 @@
         "X" : 720,
         "Y" : 207
       }, {
-        "X" : 406,
+        "X" : 405,
         "Y" : 207
       } ]
     } ]
@@ -145,7 +145,7 @@
         "X" : 805,
         "Y" : 227
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 227
       } ]
     }, {
@@ -161,14 +161,14 @@
         "X" : 672,
         "Y" : 227
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 227
       } ]
     }, {
       "sourcePinID" : 10,
       "targetPinID" : 106,
       "points" : [ {
-        "X" : 405,
+        "X" : 404,
         "Y" : 227
       }, {
         "X" : 672,
@@ -199,7 +199,7 @@
         "X" : 805,
         "Y" : 247
       }, {
-        "X" : 406,
+        "X" : 405,
         "Y" : 247
       } ]
     }, {
@@ -215,7 +215,7 @@
         "X" : 752,
         "Y" : 247
       }, {
-        "X" : 406,
+        "X" : 405,
         "Y" : 247
       } ]
     }, {
@@ -231,7 +231,7 @@
         "X" : 752,
         "Y" : 247
       }, {
-        "X" : 406,
+        "X" : 405,
         "Y" : 247
       } ]
     }, {
@@ -247,7 +247,7 @@
         "X" : 752,
         "Y" : 247
       }, {
-        "X" : 406,
+        "X" : 405,
         "Y" : 247
       } ]
     } ]
@@ -275,7 +275,7 @@
         "X" : 488,
         "Y" : 127
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 127
       } ]
     }, {
@@ -297,7 +297,7 @@
         "X" : 488,
         "Y" : 127
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 127
       } ]
     }, {
@@ -319,7 +319,7 @@
         "X" : 488,
         "Y" : 127
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 127
       } ]
     }, {
@@ -335,7 +335,7 @@
         "X" : 756,
         "Y" : 127
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 127
       } ]
     }, {
@@ -357,7 +357,7 @@
         "X" : 488,
         "Y" : 127
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 127
       } ]
     }, {
@@ -379,7 +379,7 @@
         "X" : 488,
         "Y" : 127
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 127
       } ]
     } ]
@@ -392,7 +392,7 @@
       "sourcePinID" : 50,
       "targetPinID" : 74,
       "points" : [ {
-        "X" : 949,
+        "X" : 947,
         "Y" : 479
       }, {
         "X" : 1021,
@@ -408,7 +408,7 @@
       "sourcePinID" : 57,
       "targetPinID" : 71,
       "points" : [ {
-        "X" : 944,
+        "X" : 941,
         "Y" : 623
       }, {
         "X" : 973,
@@ -424,7 +424,7 @@
       "sourcePinID" : 64,
       "targetPinID" : 72,
       "points" : [ {
-        "X" : 944,
+        "X" : 941,
         "Y" : 727
       }, {
         "X" : 1096,
@@ -455,7 +455,7 @@
         "X" : 664,
         "Y" : 539
       }, {
-        "X" : 395,
+        "X" : 394,
         "Y" : 539
       } ]
     } ]
@@ -477,7 +477,7 @@
         "X" : 664,
         "Y" : 559
       }, {
-        "X" : 395,
+        "X" : 394,
         "Y" : 559
       } ]
     } ]
@@ -499,7 +499,7 @@
         "X" : 608,
         "Y" : 579
       }, {
-        "X" : 395,
+        "X" : 394,
         "Y" : 579
       } ]
     } ]
@@ -527,7 +527,7 @@
         "X" : 696,
         "Y" : 167
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 167
       } ]
     }, {
@@ -546,7 +546,7 @@
         "X" : 692,
         "Y" : 167
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 167
       } ]
     }, {
@@ -562,7 +562,7 @@
         "X" : 696,
         "Y" : 167
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 167
       } ]
     }, {
@@ -584,7 +584,7 @@
         "X" : 696,
         "Y" : 167
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 167
       } ]
     }, {
@@ -600,7 +600,7 @@
         "X" : 696,
         "Y" : 167
       }, {
-        "X" : 405,
+        "X" : 404,
         "Y" : 167
       } ]
     } ]
@@ -622,7 +622,7 @@
         "X" : 616,
         "Y" : 519
       }, {
-        "X" : 395,
+        "X" : 394,
         "Y" : 519
       } ]
     } ]
@@ -644,7 +644,7 @@
         "X" : 592,
         "Y" : 499
       }, {
-        "X" : 395,
+        "X" : 394,
         "Y" : 499
       } ]
     } ]
@@ -657,7 +657,7 @@
       "sourcePinID" : 96,
       "targetPinID" : 2,
       "points" : [ {
-        "X" : 160,
+        "X" : 158,
         "Y" : 119
       }, {
         "X" : 192,
@@ -679,7 +679,7 @@
       "sourcePinID" : 99,
       "targetPinID" : 3,
       "points" : [ {
-        "X" : 143,
+        "X" : 141,
         "Y" : 183
       }, {
         "X" : 253,
@@ -717,7 +717,7 @@
       "sourcePinID" : 109,
       "targetPinID" : 5,
       "points" : [ {
-        "X" : 127,
+        "X" : 128,
         "Y" : 311
       }, {
         "X" : 224,
@@ -739,11 +739,7 @@
     "moduleDelay" : 5,
     "positionX" : 258,
     "positionY" : 112,
-    "simGuiVisibleInSimulation" : true,
-    "simGuiXRelative" : 3,
-    "simGuiYRelative" : 22,
-    "simGuiWidth" : 798,
-    "simGuiHeight" : 886,
+    "simGuiVisibleInSimulation" : false,
     "clockPeriod" : 200,
     "startAutomatically" : true,
     "simulationMaster" : true,
@@ -1523,16 +1519,56 @@
     "moduleDelay" : 5,
     "positionX" : 810,
     "positionY" : 296,
-    "simGuiVisibleInSimulation" : true,
-    "simGuiXRelative" : 830,
-    "simGuiYRelative" : 10,
-    "simGuiWidth" : 1024,
-    "simGuiHeight" : 512,
+    "simGuiVisibleInSimulation" : false,
     "columnAddressNBits" : 6,
     "lineAddressNBits" : 5,
     "windowScreenWidthPixels" : 1024,
     "windowScreenHeightixels" : 512,
     "defaultPenColor" : 65280,
+    "image paths" : [ "assets/images/dead.png", "assets/images/game_over.png", "assets/images/main_menu.png", "assets/images/paused_overlay.png" ],
+    "sounds/videos settings" : [ {
+      "filePathName" : "assets/sounds/asteroid_explosion.wav",
+      "relative sound volume" : 0.68,
+      "relative start time" : 0.0,
+      "relative stop time" : 1.0,
+      "playAsClip" : false
+    }, {
+      "filePathName" : "assets/sounds/dead.wav",
+      "relative sound volume" : 1.0,
+      "relative start time" : 0.0,
+      "relative stop time" : 1.0,
+      "playAsClip" : false
+    }, {
+      "filePathName" : "assets/sounds/energy.wav",
+      "relative sound volume" : 1.0,
+      "relative start time" : 0.0,
+      "relative stop time" : 1.0,
+      "playAsClip" : false
+    }, {
+      "filePathName" : "assets/sounds/game_over.wav",
+      "relative sound volume" : 1.0,
+      "relative start time" : 0.0,
+      "relative stop time" : 0.59,
+      "playAsClip" : false
+    }, {
+      "filePathName" : "assets/sounds/pause.wav",
+      "relative sound volume" : 1.0,
+      "relative start time" : 0.0,
+      "relative stop time" : 1.0,
+      "playAsClip" : false
+    }, {
+      "filePathName" : "assets/sounds/shoot.wav",
+      "relative sound volume" : 1.0,
+      "relative start time" : 0.0,
+      "relative stop time" : 1.0,
+      "playAsClip" : false
+    }, {
+      "filePathName" : "assets/video/game_background.mp4",
+      "relative sound volume" : 0.0,
+      "relative start time" : 0.18,
+      "relative stop time" : 0.94,
+      "playAsClip" : false
+    } ],
     "addressable data" : {
       "className" : "ModuleExtensionMemoryMediaCenter",
       "elementID" : 83,
