@@ -6,7 +6,8 @@
 ;   - R2 (Endereco Teclado linha, linha convertida)
 ;   - R3 (Endereco Teclado Coluna, coluna convertida)
 ;   - R5 (Mascara)
-;   - R10 (Tecla armazenada para futuros comandos) [Registo exclusivo para isto - nao utilizar]
+;   - R9 (Flag que indica se é para executar um comando ou nao) [Registo exclusivo para isto - nao utilizar]
+;   - R10 (Ultima Tecla armazenada para futuros comandos) [Registo exclusivo para isto - nao utilizar]
 ;**********
 
 
@@ -35,9 +36,19 @@ init:
     MOV  R3, TEC_COL   ; endere�o do perif�rico das colunas
     MOV  R4, DISPLAYS
     MOV  R5, MASCARA   ; para isolar os 4 bits de menor peso, ao ler as colunas do teclado
+    MOV  R9, 0
     MOV  R10, -1
 
-
+loop:
+    CALL keyboard_listner
+    NOP
+    NOP
+    NOP
+    MOVB [R4], R10
+    NOP
+    NOP
+    NOP
+    JMP loop
 
 
 ;Copiar para o ficheiro final a partir daqui:
@@ -45,7 +56,7 @@ keyboard_listner:
     PUSH R0
     PUSH R1
     PUSH R5
-    MOV R10, -1         ; Unpress key
+
     MOV  R1, 0001b         ; Testar Linha 1
     CALL test_line
     JNZ  press
@@ -58,6 +69,8 @@ keyboard_listner:
     MOV  R1, 1000b         ; Testar Linha 4
     CALL test_line
     JNZ  press
+    unpress:
+        MOV R9, 0
     end_keyboard_listner:
         POP R5
         POP R1
@@ -75,7 +88,10 @@ press:
     CALL convert
     SHL R1, 2
     ADD R1, R0      ; conversao final
+    CMP R1, R10     ; Nao repetir o mesmo comando se o botao nao for largado
+    JZ unpress
     MOV R10, R1
+    MOV R9, 1
     JMP end_keyboard_listner
 
 convert:
