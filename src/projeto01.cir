@@ -1551,12 +1551,6 @@
       "relative stop time" : 0.59,
       "playAsClip" : false
     }, {
-      "filePathName" : "assets/sounds/pause.wav",
-      "relative sound volume" : 1.0,
-      "relative start time" : 0.0,
-      "relative stop time" : 1.0,
-      "playAsClip" : false
-    }, {
       "filePathName" : "assets/sounds/shoot.wav",
       "relative sound volume" : 1.0,
       "relative start time" : 0.0,
@@ -1567,6 +1561,12 @@
       "relative sound volume" : 0.0,
       "relative start time" : 0.18,
       "relative stop time" : 0.94,
+      "playAsClip" : false
+    }, {
+      "filePathName" : "assets/sounds/beep.wav",
+      "relative sound volume" : 1.0,
+      "relative start time" : 0.0,
+      "relative stop time" : 1.0,
       "playAsClip" : false
     } ],
     "addressable data" : {
