@@ -41,19 +41,21 @@ init:
 	;set energy flag as 0
 	MOV R5, 0
 	MOV [ENERGY_FLAG], R5
-
     MOV  R6, DISPLAYS
 
 loop:
     CALL keyboard_listner
+    MOV R7, [EXECUTE_COMMAND]
+    CMP R7, 1
+    JNZ end_update_energy
 
-    MOV R10, [LAST_PRESSED_KEY]
-    MOVB [R6], R10
-
+    MOV R8, [LAST_PRESSED_KEY]
+    CMP R8, 4s
+    JZ energy_decrease
+    CMP R8, 6
+    JZ energy_increase
+    JNZ end_update_energy
 	CALL energy_update
-	; tirar CALL espera_nao_tecla
-	; tirar CALL espera_tecla
-
     JMP loop
 
 
@@ -161,22 +163,8 @@ convert_to_key_aux:
 ; Rotina de controlo do OUTPUT (DISPLAY)
 ;**********
 ;Copiar para o ficheiro final a partir daqui:
-espera_nao_tecla:			; neste ciclo espera-se até NÃO haver nenhuma tecla premida
-	CALL keyboard_listner	; leitura às teclas
-	CMP [EXECUTE_COMMAND], 0;
-	JZ	espera_nao_tecla	; espera, enquanto houver tecla uma tecla carregada
-	
-espera_tecla:				; neste ciclo espera-se até uma tecla ser premida
-	CALL	teclado			; leitura às teclas
-	CMP	[EXECUTE_COMMAND], 0
-	JZ	espera_tecla		; espera, enquanto não houver tecla
-	
-	CMP	[LAST_PRESSED_KEY], 6
-	JNZ	testa_DECREMENTO
-	JMP testa_INCREMENTO
-	
-testa_INCREMENTO:
-  PUSH R5
+energy_increase:
+  PUSH R6
   PUSH R7
   PUSH R8
   PUSH R10
@@ -195,18 +183,18 @@ testa_INCREMENTO:
   MOV [CURRENT_ENERGY], R10
 
   ;set new energy on display
-  MOV R5, SET_ENERGY
-  MOV [R5], R8
+  MOV R6, SET_ENERGY
+  MOV [R6], R8
 
   return_energy_encrease:
     POP R10
     POP R8
     POP R7
-    POP R5
+    POP R6
     RET
 	
-testa_DECREMENTO:
-  PUSH R5
+energy_decrease:
+  PUSH R6
   PUSH R7
   PUSH R8
   PUSH R10
@@ -225,8 +213,8 @@ testa_DECREMENTO:
   MOV [CURRENT_ENERGY], R10
 
   ;set new energy on display
-  MOV R5, SET_ENERGY
-  MOV [R5], R8
+  MOV R6, SET_ENERGY
+  MOV [R6], R8
 
   ;check game over
   CMP R8, 0
@@ -236,7 +224,7 @@ testa_DECREMENTO:
     POP R10
     POP R8
     POP R7
-    POP R2
+    POP R6
     RET
 
 energy_update:
@@ -257,33 +245,7 @@ energy_update:
     POP R0
     RET
 
-
-; CALL keyboard_listner     (Click Tecla 4)
-; -> LAST_PRESSED_KEY = 4
-    MOV RX, [EXECUTE_COMMAND]
-    CMP RX, 1
-    JNZ end_update_energy
-
-    MOV RX, [LAST_PRESSED_KEY]
-    CMP RX, TECLA_DECREMENTAR
-    JZ decrementar_energy
-
-    CMP RX, TECLA_INCREMENTAR
-    JZ incrementar_energy
-
-    JNZ end_update_energy
-
-    incrementar_energy:
-        CALL increment
-        JMP end_update_energy
-
-    decrementar_energy:
-        CALL decrement
-        JMP end_update_energy
-
-
-    end_update_energy:
-        POP ...
-        ...
-        .
+end_update_energy:
+    POP R0
+    RET
         
