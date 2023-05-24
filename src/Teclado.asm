@@ -56,7 +56,6 @@ keyboard_listner:
     PUSH R0
     PUSH R1
     PUSH R5
-
     MOV  R1, 0001b         ; Testar Linha 1
     CALL test_line
     JNZ  press
@@ -69,8 +68,7 @@ keyboard_listner:
     MOV  R1, 1000b         ; Testar Linha 4
     CALL test_line
     JNZ  press
-    unpress:
-        MOV R9, 0
+    MOV R9, 0
     end_keyboard_listner:
         POP R5
         POP R1
@@ -88,11 +86,14 @@ press:
     CALL convert
     SHL R1, 2
     ADD R1, R0      ; conversao final
-    CMP R1, R10     ; Nao repetir o mesmo comando se o botao nao for largado
-    JZ unpress
-    MOV R10, R1
-    MOV R9, 1
+    CMP R9, 0
+    JZ press_update
+    MOV R9, -1
     JMP end_keyboard_listner
+    press_update:
+        MOV R10, R1
+        MOV R9, 1
+        JMP end_keyboard_listner
 
 convert:
     PUSH R2
