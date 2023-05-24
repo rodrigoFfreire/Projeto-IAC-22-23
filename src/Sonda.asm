@@ -10,9 +10,9 @@ MASCARA    EQU 0FH     ; para isolar os 4 bits de menor peso, ao ler as colunas 
 
 COMANDOS			EQU	6000H			; endereço de base dos comandos do MediaCenter
 
-DEFINE_LINHA    	EQU COMANDOS + 0AH		; endereço do comando para definir a linha
-DEFINE_COLUNA   	EQU COMANDOS + 0CH		; endereço do comando para definir a coluna
-DEFINE_PIXEL    	EQU COMANDOS + 12H		; endereço do comando para escrever um pixel
+SET_LINE    	EQU COMANDOS + 0AH		; endereço do comando para definir a linha
+SET_COLUMN   	EQU COMANDOS + 0CH		; endereço do comando para definir a coluna
+SET_PIXEL    	EQU COMANDOS + 12H		; endereço do comando para escrever um pixel
 APAGA_AVISO     	EQU COMANDOS + 40H		; endereço do comando para apagar o aviso de nenhum cenário selecionado
 APAGA_ECRÃ	 	EQU COMANDOS + 02H		; endereço do comando para apagar todos os pixels já desenhados
 SELECIONA_CENARIO_FUNDO  EQU COMANDOS + 42H		; endereço do comando para selecionar uma imagem de fundo
@@ -20,7 +20,18 @@ SELECIONA_CENARIO_FUNDO  EQU COMANDOS + 42H		; endereço do comando para selecio
 N_LINHAS        	EQU  32				; número de linhas do ecrã (altura)
 N_COLUNAS       	EQU  64				; número de colunas do ecrã (largura)
 
-COR_SONDA       	EQU 0FF00H			; cor do pixel: vermelho em ARGB (opaco e vermelho no máximo, verde e azul a 0)
+BLACK              EQU 0F000H
+GRAY               EQU 0F888H
+RED                EQU 0FF00H
+DARKRED            EQU 0FE00H
+GREEN              EQU 0F0F0H	
+DARKGREEN          EQU 0F0A0H	
+BROWN              EQU 0FA52H
+BLUE               EQU 0F06FH
+CYAN               EQU 0F0FFH
+WHITE              EQU 0FFFFH
+YELLOW             EQU 0FFF0H
+DARKYELLOW         EQU 0FFA3H
 
 
 COLUNA_INIT         EQU  32
@@ -37,49 +48,67 @@ pilha:
 SP_inicial:				; este � o endere�o (1200H) com que o SP deve ser 
 						; inicializado. O 1.� end. de retorno ser� 
 						; armazenado em 11FEH (1200H-2)
+LAST_PRESSED_KEY:
+    WORD -1 ; Start with default value   
 
-SONDA:                  ; (x, y, cor)
-    WORD COLUNA_INIT, LINHA_INIT, COR_SONDA
+; Used together with LAST_KEY_PRESSED to determine when to execute a command
+; 0 -> dont execute; 1 -> execute; -1 -> dont execute [key was not released]
+EXECUTE_COMMAND:
+    WORD 0
+
+ENERGY:
+    WORD 100
+
+; Entities
+PROBE:
+    ;WORD 32, 26, 1, SPRITE_PROBE ; (pos_x, pos_y, visible, sprite)
+    WORD 27, 27, 1, SPRITE_SPACESHIP; (x, y, estado, sprite_atual)
+
+SPACESHIP:
+    WORD 0, 0, 1, SPRITE_SPACESHIP ; (pos_x, pos_y, visible, sprite)
+
+ASTEROID:
+    WORD 0, 0, 1, SPRITE_ASTEROID ; (pos_x, pos_y, visible, sprite)
+
+; Sprites
+SPRITE_PROBE:
+    WORD 1, 1 ; (x, y)
+    WORD RED
+
+SPRITE_SPACESHIP:
+    ;WORD 1, 1 ; (x, y)
+    ; criar a textura
+    WORD 9, 5
+	WORD		0, 0, BROWN, BROWN, BROWN, BROWN, BROWN, 0, 0
+	WORD		0, BROWN, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BROWN, 0
+    WORD    BROWN, YELLOW, CYAN, CYAN, CYAN, CYAN, CYAN, YELLOW, BROWN 
+    WORD    BROWN, YELLOW, CYAN, CYAN, CYAN, CYAN, CYAN, YELLOW, BROWN 
+	WORD		BROWN, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BROWN 
+
+SPRITE_ASTEROID:
+    WORD 1, 1 ; (x, y)
+    ; criar a textura
 
 
     PLACE      0
 init:
     MOV  SP, SP_inicial
 
-    MOV  R2, TEC_LIN   ; endere�o do perif�rico das linhas
-    MOV  R3, TEC_COL   ; endere�o do perif�rico das colunas
     MOV  R4, DISPLAYS
-    MOV  R5, MASCARA   ; para isolar os 4 bits de menor peso, ao ler as colunas do teclado
     MOV	R8, 0			; cenário de fundo número 0
-    MOV  R9, 0
-    MOV  R10, -1
 
     MOV  [APAGA_AVISO], R1	; apaga o aviso de nenhum cenário selecionado (o valor de R1 não é relevante)
 	MOV  [APAGA_ECRÃ], R1	; apaga todos os pixels já desenhados (o valor de R1 não é relevante)
 	MOV  [SELECIONA_CENARIO_FUNDO], R8	; seleciona o cenário de fundo
 
     ; draw sonda first time
-    PUSH R0
-    PUSH R1
-    PUSH R2
-    PUSH R3
-    MOV R0, SONDA
-    MOV R1, [R0]
-    MOV R2, [R0+2]
-    MOV R3, COR_SONDA
-
-    MOV [DEFINE_COLUNA], R1
-    MOV [DEFINE_LINHA], R2
-    MOV [DEFINE_PIXEL], R3
-
-    POP R3
-    POP R2
-    POP R1
-    POP R0 
+    MOV R2, PROBE
+    CALL draw_entity
 
 
 loop:
     CALL keyboard_listner
+    MOV R10, [LAST_PRESSED_KEY]
     MOVB [R4], R10
     CALL update_sonda
     JMP loop
@@ -90,22 +119,26 @@ update_sonda:
     PUSH R1             ; linha
     PUSH R2             ; coluna
     PUSH R3             ; cor
-    CMP R9, 1
+    PUSH R4
+    MOV R4, [EXECUTE_COMMAND]
+    CMP R4, 1
     JNZ end_update_sonda
-    CMP R10, TECLA_MOVER_SONDA
+    MOV R4, [LAST_PRESSED_KEY]
+    CMP R4, TECLA_MOVER_SONDA
     JNZ end_update_sonda
-    MOV R0, SONDA
+
+    MOV R0, PROBE
     MOV R1, [R0]         ; x
     MOV R2, [R0+2]      ; y
     CMP R2, 0
     JZ move_sonda_home
     CALL delete_sonda
     SUB R2, 1          ; subir sonda
+    MOV [R0+2], R2
     CALL draw_sonda
-    update_memory: 
-        MOV [R0+2], R2
-        MOV [R0], R1
+
     end_update_sonda:
+        POP R4
         POP R3
         POP R2
         POP R1
@@ -113,25 +146,34 @@ update_sonda:
         RET 
 
 move_sonda_home:
+    PUSH R1
     CALL delete_sonda
-    MOV R2, LINHA_INIT
+    MOV R1, LINHA_INIT
+    MOV [R0+2], R1
     CALL draw_sonda
-    JMP update_memory
+    POP R1
+    JMP end_update_sonda
 
 delete_sonda:
-    MOV R3, 0           ; blank
-    CALL write_pixel
+    PUSH R1
+    PUSH R2
+    MOV R2, R0
+    MOV R1, 0
+    MOV [R2+4], R1
+    CALL draw_entity
+    POP R2
+    POP R1
     RET
 
 draw_sonda:
-    MOV R3, [R0+4]
-    CALL write_pixel
-    RET
-
-write_pixel:
-    MOV [DEFINE_COLUNA], R1
-    MOV [DEFINE_LINHA], R2
-    MOV [DEFINE_PIXEL], R3          ; Desenha a sonda na pos inicial 
+    PUSH R1
+    PUSH R2
+    MOV R2, R0
+    MOV R1, 1
+    MOV [R2+4], R1
+    CALL draw_entity
+    POP R1
+    POP R2
     RET
 
 
@@ -140,7 +182,13 @@ write_pixel:
 keyboard_listner:
     PUSH R0
     PUSH R1
-    PUSH R5
+    PUSH R2
+    PUSH R3
+    PUSH R4
+    MOV  R2, TEC_LIN
+    MOV  R3, TEC_COL
+    MOV  R4, 0FH
+
     MOV  R1, 0001b         ; Testar Linha 1
     CALL test_line
     JNZ  press
@@ -153,9 +201,12 @@ keyboard_listner:
     MOV  R1, 1000b         ; Testar Linha 4
     CALL test_line
     JNZ  press
-    MOV R9, 0
+    MOV R1, 0
+    MOV [EXECUTE_COMMAND], R1
     end_keyboard_listner:
-        POP R5
+        POP R4
+        POP R3
+        POP R2
         POP R1
         POP R0
         RET
@@ -163,7 +214,7 @@ keyboard_listner:
 test_line:
     MOVB [R2], R1
     MOVB R0, [R3]   
-    AND R0, R5      ; Mask low bits
+    AND R0, R4      ; Mask low bits
     CMP R0, 0
     RET
 
@@ -171,13 +222,16 @@ press:
     CALL convert
     SHL R1, 2
     ADD R1, R0      ; conversao final
-    CMP R9, 0
+    MOV R0, [EXECUTE_COMMAND]
+    CMP R0, 0 
     JZ press_update
-    MOV R9, -1
+    MOV R1, -1
+    MOV [EXECUTE_COMMAND], R1
     JMP end_keyboard_listner
     press_update:
-        MOV R10, R1
-        MOV R9, 1
+        MOV [LAST_PRESSED_KEY], R1
+        MOV R1, 1
+        MOV [EXECUTE_COMMAND], R1
         JMP end_keyboard_listner
 
 convert:
@@ -205,3 +259,78 @@ convert_aux_col:
     SHR R0, 1
     ADD R2, 1
     JMP compare
+
+
+draw_entity:
+    PUSH R0
+    PUSH R1
+    PUSH R2
+    PUSH R3
+    PUSH R5
+    PUSH R6
+    MOV R0, R2 ; Entity base address
+    MOV R1, [R2+6] ; Sprite base address
+    MOV R2, [R1] ; l
+    MOV R3, [R1+2] ; h
+
+    MOV R5, -1 ; offset y
+    draw_from_table:
+        ADD R5, 1
+        CMP R5, R3
+        JZ end_draw_entity
+        MOV R6, 0 ; offset x
+        inner_loop:
+            CALL draw_pixel
+            ADD R6, 1
+            CMP R6, R2 ; Reached last pixel (length)?
+            JZ draw_from_table
+            JMP inner_loop
+
+    end_draw_entity:
+        POP R6
+        POP R5
+        POP R3
+        POP R2
+        POP R1
+        POP R0
+        RET
+
+; R2 - pos_x; R3 - pos_y; R5 - offset y; R6 - offset x
+draw_pixel:
+    PUSH R1
+    PUSH R2
+    PUSH R3
+    PUSH R4
+    PUSH R5
+    PUSH R7
+    MOV R2, [R0] ; pos_x
+    MOV R3, [R0+2] ; pos_y
+    MOV R4, [R0+4] ; Visible
+    ADD R2, R6
+    ADD R3, R5
+
+    MOV R7, [R1]
+    MUL R5, R7
+    ADD R5, R6
+    SHL R5, 1 ; get matrix offset for pixel (*2 due to byte-adressable design)
+    ADD R5, 4 ; memory offset to start at the pixel matrix
+    ADD R1, R5 ; get final memory address of correct pixel
+    MOV R7, [R1]
+
+    MOV  [SET_COLUMN], R2
+	MOV  [SET_LINE], R3
+    CMP R4, 1
+    JZ set_pixel
+    MOV R7, 0
+
+    set_pixel:
+	    MOV  [SET_PIXEL], R7
+    
+    end_draw_pixel:
+    POP R7
+    POP R5
+    POP R4
+    POP R3
+    POP R2
+    POP R1
+    RET
