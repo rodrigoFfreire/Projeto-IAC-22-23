@@ -29,33 +29,16 @@ EXECUTE_COMMAND:
 CURRENT_ENERGY:
   WORD 100 ;starting value  (105 because exception will decrease it in beggining)
 
-;FLAGS
-ENERGY_FLAG:
-  WORD 0 ;by default flag is 0 (no energy update)
-
-
 
     PLACE      0
 init:
     MOV  SP, SP_inicial
 	;set energy flag as 0
-	MOV R5, 0
-	MOV [ENERGY_FLAG], R5
     MOV  R6, DISPLAYS
 
 loop:
     CALL keyboard_listner
-    MOV R7, [EXECUTE_COMMAND]
-    CMP R7, 1
-    JNZ end_update_energy
-
-    MOV R8, [LAST_PRESSED_KEY]
-    CMP R8, 4s
-    JZ energy_decrease
-    CMP R8, 6
-    JZ energy_increase
-    JNZ end_update_energy
-	CALL energy_update
+    CALL energy_update
     JMP loop
 
 
@@ -163,6 +146,25 @@ convert_to_key_aux:
 ; Rotina de controlo do OUTPUT (DISPLAY)
 ;**********
 ;Copiar para o ficheiro final a partir daqui:
+energy_update:
+  PUSH R7
+  PUSH R8
+
+  MOV R7, [EXECUTE_COMMAND]
+  CMP R7, 1
+  JNZ return_energy_update
+
+  MOV R8, [LAST_PRESSED_KEY]
+  CMP R8, 4
+  JZ energy_decrease
+  CMP R8, 6
+  JZ energy_increase
+
+  return_energy_update:
+    POP R8
+    POP R7
+    RET
+
 energy_increase:
   PUSH R6
   PUSH R7
@@ -227,25 +229,5 @@ energy_decrease:
     POP R6
     RET
 
-energy_update:
-  PUSH R0
 
-  MOV R0, [ENERGY_FLAG] ;get energy flag
 
-  ;if flag is off skip update
-  CMP R0, 0
-  JZ return_energy_update
-
-  ;otherwise handle the update
-  CALL energy_decrease
-  MOV R0, 0
-  MOV [ENERGY_FLAG], R0 ;set energy flag to 0
-
-  return_energy_update:
-    POP R0
-    RET
-
-end_update_energy:
-    POP R0
-    RET
-        
