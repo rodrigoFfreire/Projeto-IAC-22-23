@@ -29,17 +29,20 @@ init:
 
     MOV  R2, TEC_LIN   ; endere�o do perif�rico das linhas
     MOV  R3, TEC_COL   ; endere�o do perif�rico das colunas
-    MOV  R4, DISPLAYS
-    MOV  R5, MASCARA   ; para isolar os 4 bits de menor peso, ao ler as colunas do teclado
-    MOV  R9, 0
-    MOV  R10, -1
+    MOV  R6, DISPLAYS
+    MOV  R4, MASCARA   ; para isolar os 4 bits de menor peso, ao ler as colunas do teclado
+    MOV  R1, 0
+    MOV  R0, -1
+    MOV  [EXECUTE_COMMAND], R1
+    MOV  [LAST_PRESSED_KEY], R0
 
 loop:
     CALL keyboard_listner
     NOP
     NOP
     NOP
-    MOVB [R4], R10
+    MOV R10, [LAST_PRESSED_KEY]
+    MOVB [R6], R10
     NOP
     NOP
     NOP
@@ -62,10 +65,9 @@ keyboard_listner:
     PUSH R2
     PUSH R3
     PUSH R4
-
     MOV  R2, TEC_LIN
     MOV  R3, TEC_COL
-
+    MOV  R4, 0FH
 
     MOV  R1, 0001b         ; Testar Linha 1
     CALL test_line
@@ -79,9 +81,12 @@ keyboard_listner:
     MOV  R1, 1000b         ; Testar Linha 4
     CALL test_line
     JNZ  press
-    MOV [EXECUTE_COMMAND], 0
+    MOV R1, 0
+    MOV [EXECUTE_COMMAND], R1
     end_keyboard_listner:
-        POP R5
+        POP R4
+        POP R3
+        POP R2
         POP R1
         POP R0
         RET
@@ -89,7 +94,7 @@ keyboard_listner:
 test_line:
     MOVB [R2], R1
     MOVB R0, [R3]   
-    AND R0, R5      ; Mask low bits
+    AND R0, R4      ; Mask low bits
     CMP R0, 0
     RET
 
@@ -97,13 +102,16 @@ press:
     CALL convert
     SHL R1, 2
     ADD R1, R0      ; conversao final
-    CMP R9, 0
+    MOV R0, [EXECUTE_COMMAND]
+    CMP R0, 0 
     JZ press_update
-    MOV R9, -1
+    MOV R1, -1
+    MOV [EXECUTE_COMMAND], R1
     JMP end_keyboard_listner
     press_update:
-        MOV R10, R1
-        MOV R9, 1
+        MOV [LAST_PRESSED_KEY], R1
+        MOV R1, 1
+        MOV [EXECUTE_COMMAND], R1
         JMP end_keyboard_listner
 
 convert:
