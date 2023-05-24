@@ -1,23 +1,23 @@
 ; Ignorar isto apenas para testing purposes
-DISPLAYS   EQU 0A000H  ; endere?o dos displays de 7 segmentos (perif?rico POUT-1)
-TEC_LIN    EQU 0C000H  ; endere?o das linhas do teclado (perif?rico POUT-2)
-TEC_COL    EQU 0E000H  ; endere?o das colunas do teclado (perif?rico PIN)
-MASCARA    EQU 0FH     ; para isolar os 4 bits de menor peso, ao ler as colunas do teclado
+DISPLAYS                EQU 0A000H  ; endereco dos displays de 7 segmentos (periferico POUT-1)
+TEC_LIN                 EQU 0C000H  ; endereco das linhas do teclado (periferico POUT-2)
+TEC_COL                 EQU 0E000H  ; endereco das colunas do teclado (periferico PIN)
+MASCARA                 EQU 0FH     ; para isolar os 4 bits de menor peso, ao ler as colunas do teclado
 TECLA_ESQUERDA			EQU 4		; tecla na primeira coluna do teclado (tecla 4)
 TECLA_DIREITA			EQU 6		; tecla na segunda coluna do teclado (tecla 6)
 
 ;energy display
-SET_ENERGY EQU 0A000H ;address of energy display (POUT-1)
+SET_ENERGY EQU 0A000H   ;address of energy display (POUT-1)
 
 	PLACE       1000H
 pilha:
-	STACK 100H			; espa?o reservado para a pilha 
-						; (200H bytes, pois s?o 100H words)
-SP_inicial:				; este ? o endere?o (1200H) com que o SP deve ser 
-						; inicializado. O 1.? end. de retorno ser? 
+	STACK 100H			; espaco reservado para a pilha 
+						; (200H bytes, pois sao 100H words)
+SP_inicial:				; este e o endereco (1200H) com que o SP deve ser 
+						; inicializado. O primeiro end. de retorno sera
 						; armazenado em 11FEH (1200H-2)
 LAST_PRESSED_KEY:
-    WORD -1 ; Start with default value   
+    WORD -1             ; Start with default value   
 
 ; Used together with LAST_KEY_PRESSED to determine when to execute a command
 ; 0 -> dont execute; 1 -> execute; -1 -> dont execute [key was not released]
@@ -25,22 +25,21 @@ EXECUTE_COMMAND:
     WORD 0
 	
 CURRENT_ENERGY:
-    WORD 100 ;starting value  (105 because exception will decrease it in beggining)
+    WORD 100            ;starting value
 
 
     PLACE      0
 init:
-    MOV  SP, SP_inicial
-	;set energy flag as 0
-    MOV  R6, DISPLAYS
+    MOV  SP, SP_inicial ; inicializa SP para a palavra a seguir
+						; a última da pilha
+    MOV  R6, DISPLAYS   ; endereco do display das energias
 
 loop:
-    MOV R10, [CURRENT_ENERGY]
-    MOV [R6], R10
+    MOV R10, [CURRENT_ENERGY]  ; energia inicial (vai se alterando e guardando aqui)
+    MOV [R6], R10              ; alterar valor no display com nova energia
 
-    CALL keyboard_listner
-    CALL energy_update
-
+    CALL keyboard_listner      ; controlo do input (teclado)
+    CALL energy_update         ; mudanca da energia (conforme tecla guardada)
 
     JMP loop
 
@@ -145,8 +144,11 @@ convert_to_key_aux:
     RET
 
 
-;**********
-; Rotina de controlo do OUTPUT (DISPLAY)
+**********
+; Rotina de controlo do output (Display)
+; Registos Usados (Argumentos):
+;   - R7 (valor da tecla)
+;   - R10 (valor da energia)
 ;**********
 ;Copiar para o ficheiro final a partir daqui:
 energy_update:
@@ -154,12 +156,12 @@ energy_update:
 
     MOV R7, [EXECUTE_COMMAND]
     CMP R7, 1
-    JNZ return_energy_update
+    JNZ return_energy_update      ; if execute_command is different than 1, do nothing
 
     MOV R7, [LAST_PRESSED_KEY]
-    CMP R7, TECLA_ESQUERDA
+    CMP R7, TECLA_ESQUERDA        ; if last key pressed is 4, decrease 1 energy
     JZ energy_decrease
-    CMP R7, TECLA_DIREITA
+    CMP R7, TECLA_DIREITA         ; if last key pressed is 6, increase 1 energy
     JZ energy_increase
     
     JMP return_energy_update
@@ -167,8 +169,8 @@ energy_update:
     energy_increase:
         PUSH R10
 
-        MOV R10, [CURRENT_ENERGY] ;get current energy
-        ADD R10, 1 ; add 1
+        MOV R10, [CURRENT_ENERGY] ; get current energy
+        ADD R10, 1                ; add 1
         MOV [CURRENT_ENERGY], R10 ; save new energy 
 
         POP R10
@@ -177,9 +179,9 @@ energy_update:
     energy_decrease:
         PUSH R10
 
-        MOV R10, [CURRENT_ENERGY] ;get current energy
-        SUB R10, 1
-        MOV [CURRENT_ENERGY], R10
+        MOV R10, [CURRENT_ENERGY] ; get current energy
+        SUB R10, 1                ; subtract 1
+        MOV [CURRENT_ENERGY], R10 ; save new energy
 
         POP R10
         JMP return_energy_update
