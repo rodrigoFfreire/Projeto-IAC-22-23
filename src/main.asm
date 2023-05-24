@@ -82,39 +82,28 @@ ENERGY:
     WORD 100
 
 ; Entities
-;ENTITIES:
-AGENTS:
-    ;number of agents
+ASTEROIDS:
+    ;number of asteroids
     WORD 1
 
-    ;agent 1
-    WORD 0, 0, -1, ENEMY_SPRITES ; (x, y, state, sprites)
-
-    ;agent 2
-    WORD 0, 0, -1, ENEMY_SPRITES ; (x, y, state, sprites)
-
-    ;agent 3
-    WORD 0, 0, -1, ENEMY_SPRITES ; (x, y, state, sprites)
-
-    ;agent 4
-    WORD 0, 0, -1, FRIEND_SPRITES ; (x, y, state, sprites)
+    ;asteroid 1
+    WORD 0, 0, 1, ENEMY_SPRITES ; (x, y, state, sprite)
 
 SPACESHIP:
-    WORD 27, 27, -1, SPRITE_SPACESHIP; (x, y, estado, sprite_atual)
+    WORD 27, 27, 1, SPRITE_SPACESHIP; (x, y, visibility, sprite)
 
 PROBE:
-    WORD 26, 31, -1, SPRITE_PROBE; (x, y, state, sprites)
+    WORD 26, 31, 1, SPRITE_PROBE; (x, y, visibility, sprite)
 
 ;SPRITES
 SPRITE_SPACESHIP:
-    ;sprite #0 (default)
-    WORD	9; length
-    WORD    5; height
-    WORD	0, 0, BROWN, BROWN, BROWN, BROWN, BROWN, 0, 0
-    WORD	0, BROWN, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BROWN, 0
-    WORD    BROWN, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BROWN 
-    WORD    BROWN, YELLOW, CYAN, CYAN, CYAN, CYAN, CYAN, YELLOW, BROWN 
-    WORD    BROWN, YELLOW, CYAN, CYAN, CYAN, CYAN, CYAN, YELLOW, BROWN 
+    WORD 9; length
+    WORD 5; height
+    WORD 0, 0, BROWN, BROWN, BROWN, BROWN, BROWN, 0, 0
+    WORD 0, BROWN, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BROWN, 0
+    WORD BROWN, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BROWN 
+    WORD BROWN, YELLOW, CYAN, CYAN, CYAN, CYAN, CYAN, YELLOW, BROWN 
+    WORD BROWN, YELLOW, CYAN, CYAN, CYAN, CYAN, CYAN, YELLOW, BROWN 
 
 SPRITE_PROBE:
     WORD  1; length
