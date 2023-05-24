@@ -33,9 +33,17 @@ SCREEN_WIDTH       EQU 64
 SCREEN_HEIGHT      EQU 32
 SCREEN_ORIGIN      EQU 0
 
+BLACK              EQU 0F000H
+GRAY               EQU 0F888H
 RED                EQU 0FF00H
-GREEN              EQU 0FF00H
-BLUE               EQU 0F00FH
+DARKRED            EQU 0FE00H
+GREEN              EQU 0F0F0H	
+DARKGREEN          EQU 0F0A0H	
+BROWN              EQU 0FA52H
+BLUE               EQU 0F06FH
+WHITE              EQU 0FFFFH
+YELLOW             EQU 0FFF0H
+DARKYELLOW         EQU 0FFA3H
 ; **Adicionar mais cores aqui se for preciso**
 
 ; Audio/Video
