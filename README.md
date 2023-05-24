@@ -9,7 +9,7 @@
 
 ## CheckList Versao Intermedia
 - [X] Teclado completamente functional (Rodas)
-- [ ] Painel de instrumentos  (Aleixo)
+- [X] Painel de instrumentos  (Aleixo)
 - [X] Cenario de fundo
 - [ ] Asteroide no topo esquerdo que desce na diagonal....(ver pdf) {Tecla 5}   (David)
 - [X] Efeito sonoro quando o asteroide desce
