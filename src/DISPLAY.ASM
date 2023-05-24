@@ -42,28 +42,18 @@ init:
 	MOV R5, 0
 	MOV [ENERGY_FLAG], R5
 
-    MOV  R2, TEC_LIN   ; endere?o do perif?rico das linhas
-    MOV  R3, TEC_COL   ; endere?o do perif?rico das colunas
     MOV  R6, DISPLAYS
-    MOV  R4, MASCARA   ; para isolar os 4 bits de menor peso, ao ler as colunas do teclado
-    MOV  R1, 0
-    MOV  R0, -1
-    MOV  [EXECUTE_COMMAND], R1
-    MOV  [LAST_PRESSED_KEY], R0
 
 loop:
     CALL keyboard_listner
-    NOP
-    NOP
-    NOP
+
     MOV R10, [LAST_PRESSED_KEY]
     MOVB [R6], R10
-    NOP
+
 	CALL energy_update
-	CALL espera_nao_tecla
-	CALL espera_tecla
-    NOP
-    NOP
+	; tirar CALL espera_nao_tecla
+	; tirar CALL espera_tecla
+
     JMP loop
 
 
@@ -80,84 +70,93 @@ loop:
 keyboard_listner:
     PUSH R0
     PUSH R1
-    PUSH R2
-    PUSH R3
     PUSH R4
-    MOV  R2, TEC_LIN
-    MOV  R3, TEC_COL
-    MOV  R4, 0FH
 
-    MOV  R1, 0001b         ; Testar Linha 1
-    CALL test_line
-    JNZ  press
-    MOV  R1, 0010b         ; Testar Linha 2
-    CALL test_line
-    JNZ  press
-    MOV  R1, 0100b         ; Testar Linha 3
-    CALL test_line
-    JNZ  press
-    MOV  R1, 1000b         ; Testar Linha 4
-    CALL test_line
-    JNZ  press
-    MOV R1, 0
+    MOV R4, 8 ; max lines (1000b)
+
+    MOV R1, 8000H ; Start at here for bit roll to begin at 1
+    line_check_loop:
+        ROL R1, 1
+        CALL test_line
+        JNZ press_key ; If key was detected goto press routine
+
+        CMP R1, R4
+        JNZ line_check_loop ; keeping looping until all lines are checked
+
+    MOV R1, 0 ; no key was pressed so turn off execute flag
     MOV [EXECUTE_COMMAND], R1
+
     end_keyboard_listner:
         POP R4
-        POP R3
-        POP R2
         POP R1
         POP R0
         RET
 
 test_line:
+    PUSH R1
+    PUSH R2
+    PUSH R3
+    ; read from keyboard
+    MOV R2, TEC_LIN
+    MOV R3, TEC_COL
     MOVB [R2], R1
-    MOVB R0, [R3]   
-    AND R0, R4      ; Mask low bits
+    MOVB R0, [R3]
+
+    MOV R1, 0FH   
+    AND R0, R1      ; Mask nibble low
     CMP R0, 0
+
+    POP R3
+    POP R2
+    POP R1
     RET
 
-press:
-    CALL convert
-    SHL R1, 2
-    ADD R1, R0      ; conversao final
+press_key:
+    CALL convert_to_key
     MOV R0, [EXECUTE_COMMAND]
-    CMP R0, 0 
-    JZ press_update
+    CMP R0, 0 ; Check if last cycle key was released
+    JZ store_key
+
     MOV R1, -1
-    MOV [EXECUTE_COMMAND], R1
+    MOV [EXECUTE_COMMAND], R1 ; Lock command execution due to key not released
     JMP end_keyboard_listner
-    press_update:
+
+    store_key:
         MOV [LAST_PRESSED_KEY], R1
         MOV R1, 1
         MOV [EXECUTE_COMMAND], R1
         JMP end_keyboard_listner
 
-convert:
-    PUSH R2
-    PUSH R3
-    MOV R2, 0
-    MOV R3, 0
-    compare:                ; Verificar apos SHR se o numero = 0001b
-        CMP R0, 1
-        JNZ convert_aux_col
-        CMP R1, 1
-        JNZ convert_aux_lin
-    MOV R0, R2
-    MOV R1, R3
-    POP R3
-    POP R2
+convert_to_key:
+    PUSH R5
+    PUSH R6
+
+    MOV R6, R1 ; move line to R6 to be converted
+    CALL convert_to_key_aux
+    MOV R1, R5 ; move result to R1
+    MOV R6, R0 ; move column to R6 to be converted
+    CALL convert_to_key_aux
+
+    MOV R6, 4
+    MUL R1, R6
+    ADD R1, R5 ; R1 will contain converted key
+
+    POP R6
+    POP R5
     RET
 
-convert_aux_lin:
-    SHR R1, 1
-    ADD R3, 1
-    JMP compare
+convert_to_key_aux:
+    MOV R5, -1
 
-convert_aux_col:
-    SHR R0, 1
-    ADD R2, 1
-    JMP compare
-	
+    keep_shifting:
+        ADD R5, 1
+        SHR R6, 1
+        CMP R6, 0
+        JNZ keep_shifting
+
+    RET
+
+
 ;**********
 ; Rotina de controlo do OUTPUT (DISPLAY)
 ;**********
@@ -257,3 +256,34 @@ energy_update:
   return_energy_update:
     POP R0
     RET
+
+
+; CALL keyboard_listner     (Click Tecla 4)
+; -> LAST_PRESSED_KEY = 4
+    MOV RX, [EXECUTE_COMMAND]
+    CMP RX, 1
+    JNZ end_update_energy
+
+    MOV RX, [LAST_PRESSED_KEY]
+    CMP RX, TECLA_DECREMENTAR
+    JZ decrementar_energy
+
+    CMP RX, TECLA_INCREMENTAR
+    JZ incrementar_energy
+
+    JNZ end_update_energy
+
+    incrementar_energy:
+        CALL increment
+        JMP end_update_energy
+
+    decrementar_energy:
+        CALL decrement
+        JMP end_update_energy
+
+
+    end_update_energy:
+        POP ...
+        ...
+        .
+        
