@@ -8,8 +8,6 @@ TECLA_DIREITA			EQU 6		; tecla na segunda coluna do teclado (tecla 6)
 
 ;energy display
 SET_ENERGY EQU 0A000H ;address of energy display (POUT-1)
-MAX_ENERGY EQU 064H
-MIN_ENERGY EQU 0H
 
 	PLACE       1000H
 pilha:
@@ -27,7 +25,7 @@ EXECUTE_COMMAND:
     WORD 0
 	
 CURRENT_ENERGY:
-  WORD 100 ;starting value  (105 because exception will decrease it in beggining)
+    WORD 100 ;starting value  (105 because exception will decrease it in beggining)
 
 
     PLACE      0
@@ -37,8 +35,13 @@ init:
     MOV  R6, DISPLAYS
 
 loop:
+    MOV R10, [CURRENT_ENERGY]
+    MOV [R6], R10
+
     CALL keyboard_listner
     CALL energy_update
+
+
     JMP loop
 
 
@@ -147,87 +150,40 @@ convert_to_key_aux:
 ;**********
 ;Copiar para o ficheiro final a partir daqui:
 energy_update:
-  PUSH R7
-  PUSH R8
+    PUSH R7
 
-  MOV R7, [EXECUTE_COMMAND]
-  CMP R7, 1
-  JNZ return_energy_update
+    MOV R7, [EXECUTE_COMMAND]
+    CMP R7, 1
+    JNZ return_energy_update
 
-  MOV R8, [LAST_PRESSED_KEY]
-  CMP R8, 4
-  JZ energy_decrease
-  CMP R8, 6
-  JZ energy_increase
+    MOV R7, [LAST_PRESSED_KEY]
+    CMP R7, TECLA_ESQUERDA
+    JZ energy_decrease
+    CMP R7, TECLA_DIREITA
+    JZ energy_increase
+    
+    JMP return_energy_update
 
-  return_energy_update:
-    POP R8
-    POP R7
-    RET
+    energy_increase:
+        PUSH R10
 
-energy_increase:
-  PUSH R6
-  PUSH R7
-  PUSH R8
-  PUSH R10
+        MOV R10, [CURRENT_ENERGY] ;get current energy
+        ADD R10, 1 ; add 1
+        MOV [CURRENT_ENERGY], R10 ; save new energy 
 
-  MOV R10, [CURRENT_ENERGY] ;get current energy
-  
-  ;if current energy is 100 skip it
-  MOV R7, MAX_ENERGY
-  CMP R10, R7
-  JZ return_energy_encrease
-
-  ;otherwise
-  ADD R10, 1
-
-  ;save new energy
-  MOV [CURRENT_ENERGY], R10
-
-  ;set new energy on display
-  MOV R6, SET_ENERGY
-  MOV [R6], R8
-
-  return_energy_encrease:
-    POP R10
-    POP R8
-    POP R7
-    POP R6
-    RET
+        POP R10
+        JMP return_energy_update
 	
-energy_decrease:
-  PUSH R6
-  PUSH R7
-  PUSH R8
-  PUSH R10
+    energy_decrease:
+        PUSH R10
 
-  MOV R10, [CURRENT_ENERGY] ;get current energy
-  
-  ;if current energy is 0 skip it
-  MOV R7, MIN_ENERGY
-  CMP R10, R7
-  JZ return_energy_decrease
+        MOV R10, [CURRENT_ENERGY] ;get current energy
+        SUB R10, 1
+        MOV [CURRENT_ENERGY], R10
 
-  ;otherwise
-  SUB R10, 1
+        POP R10
+        JMP return_energy_update
 
-  ;save new energy
-  MOV [CURRENT_ENERGY], R10
-
-  ;set new energy on display
-  MOV R6, SET_ENERGY
-  MOV [R6], R8
-
-  ;check game over
-  CMP R8, 0
-  JNZ return_energy_decrease
-  
-  return_energy_decrease:
-    POP R10
-    POP R8
-    POP R7
-    POP R6
-    RET
-
-
-
+    return_energy_update:
+        POP R7
+        RET
