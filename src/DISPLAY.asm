@@ -34,8 +34,6 @@ CURRENT_ENERGY:
 init:
     MOV  SP, SP_inicial
 	;set energy flag as 0
-	MOV R5, 0
-	MOV [ENERGY_FLAG], R5
     MOV  R6, DISPLAYS
 
 loop:
