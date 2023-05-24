@@ -1,16 +1,3 @@
-;**********
-; Rotina de controlo do input (Teclado)
-; Registos Usados:
-;   - R0 (valor da coluna)
-;   - R1 (valor da linha, linha a testar, tecla convertida)
-;   - R2 (Endereco Teclado linha, linha convertida)
-;   - R3 (Endereco Teclado Coluna, coluna convertida)
-;   - R5 (Mascara)
-;   - R9 (Flag que indica se é para executar um comando ou nao) [Registo exclusivo para isto - nao utilizar]
-;   - R10 (Ultima Tecla armazenada para futuros comandos) [Registo exclusivo para isto - nao utilizar]
-;**********
-
-
 ; Ignorar isto apenas para testing purposes
 DISPLAYS   EQU 0A000H  ; endere�o dos displays de 7 segmentos (perif�rico POUT-1)
 TEC_LIN    EQU 0C000H  ; endere�o das linhas do teclado (perif�rico POUT-2)
@@ -26,6 +13,14 @@ pilha:
 SP_inicial:				; este � o endere�o (1200H) com que o SP deve ser 
 						; inicializado. O 1.� end. de retorno ser� 
 						; armazenado em 11FEH (1200H-2)
+LAST_PRESSED_KEY:
+    WORD -1 ; Start with default value   
+
+; Used together with LAST_KEY_PRESSED to determine when to execute a command
+; 0 -> dont execute; 1 -> execute; -1 -> dont execute [key was not released]
+EXECUTE_COMMAND:
+    WORD 0
+
 
 
     PLACE      0
@@ -51,11 +46,27 @@ loop:
     JMP loop
 
 
+;**********
+; Rotina de controlo do input (Teclado)
+; Registos Usados (Argumentos):
+;   - R0 (valor da coluna)
+;   - R1 (valor da linha, linha a testar, tecla convertida)
+;   - R2 (Endereco Teclado linha, linha convertida)
+;   - R3 (Endereco Teclado Coluna, coluna convertida)
+;   - R4 (Mascara)
+;**********
 ;Copiar para o ficheiro final a partir daqui:
 keyboard_listner:
     PUSH R0
     PUSH R1
-    PUSH R5
+    PUSH R2
+    PUSH R3
+    PUSH R4
+
+    MOV  R2, TEC_LIN
+    MOV  R3, TEC_COL
+
+
     MOV  R1, 0001b         ; Testar Linha 1
     CALL test_line
     JNZ  press
@@ -68,7 +79,7 @@ keyboard_listner:
     MOV  R1, 1000b         ; Testar Linha 4
     CALL test_line
     JNZ  press
-    MOV R9, 0
+    MOV [EXECUTE_COMMAND], 0
     end_keyboard_listner:
         POP R5
         POP R1
