@@ -360,17 +360,16 @@ check_pixel_address:
 ; * ENERGY DISPLAY UPDATE
 ; ***************************************************************************
 energy_update:
-    PUSH R6
     PUSH R7
 
     MOV R7, [EXECUTE_COMMAND]
     CMP R7, 1
-    JNZ return_energy_update
+    JNZ return_energy_update      ; if execute_command is different than 1, do nothing
 
     MOV R7, [LAST_PRESSED_KEY]
-    CMP R7, KEY_DECREMENT
+    CMP R7, TECLA_ESQUERDA        ; if last key pressed is 4, decrease 1 energy
     JZ energy_decrease
-    CMP R7, KEY_INCREMENT
+    CMP R7, TECLA_DIREITA         ; if last key pressed is 6, increase 1 energy
     JZ energy_increase
     
     JMP return_energy_update
@@ -378,8 +377,8 @@ energy_update:
     energy_increase:
         PUSH R10
 
-        MOV R10, [CURRENT_ENERGY] ;get current energy
-        ADD R10, 1 ; add 1
+        MOV R10, [CURRENT_ENERGY] ; get current energy
+        ADD R10, 1                ; add 1
         MOV [CURRENT_ENERGY], R10 ; save new energy 
 
         POP R10
@@ -388,20 +387,15 @@ energy_update:
     energy_decrease:
         PUSH R10
 
-        MOV R10, [CURRENT_ENERGY] ;get current energy
-        SUB R10, 1
-        MOV [CURRENT_ENERGY], R10
+        MOV R10, [CURRENT_ENERGY] ; get current energy
+        SUB R10, 1                ; subtract 1
+        MOV [CURRENT_ENERGY], R10 ; save new energy
 
         POP R10
         JMP return_energy_update
 
     return_energy_update:
-        MOV R6, ENERGY_DISPLAYS
-        MOV R7, [CURRENT_ENERGY]
-        MOV [R6], R7 ; Update displays
-
         POP R7
-        POP R6
         RET
 
 ; ***************************************************************************
