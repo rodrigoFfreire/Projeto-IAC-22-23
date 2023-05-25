@@ -168,7 +168,7 @@ initialize:
 game_loop:
     CALL keyboard_listner ; Listen for input
     CALL energy_update    ; Update energy display if needed
-    CALL update_sonda     ; Update probes movement if needed
+    CALL update_probe     ; Update probes movement if needed
 
     JMP game_loop
 
@@ -277,6 +277,7 @@ draw_entity:
     PUSH R3
     PUSH R5
     PUSH R6
+    PUSH R7
     MOV R0, R2 ; Entity base address
     MOV R1, [R2+6] ; Sprite base address
     MOV R2, [R1] ; l
@@ -285,17 +286,22 @@ draw_entity:
     MOV R5, -1 ; offset y
     draw_from_table:
         ADD R5, 1
-        CMP R5, R3
+        CMP R5, R3 ; Reached last pixel already?
         JZ end_draw_entity
         MOV R6, 0 ; offset x
         inner_loop:
+            CALL check_pixel_address
+            JZ skip_draw
             CALL draw_pixel
-            ADD R6, 1
-            CMP R6, R2 ; Reached last pixel (length)?
+            
+            skip_draw:
+                ADD R6, 1
+                CMP R6, R2 ; Reached last pixel of line?
             JZ draw_from_table
             JMP inner_loop
 
     end_draw_entity:
+        POP R7
         POP R6
         POP R5
         POP R3
@@ -304,44 +310,50 @@ draw_entity:
         POP R0
         RET
 
-; R2 - pos_x; R3 - pos_y; R5 - offset y; R6 - offset x
 draw_pixel:
-    PUSH R1
     PUSH R2
     PUSH R3
-    PUSH R4
-    PUSH R5
-    PUSH R7
-    MOV R2, [R0] ; pos_x
-    MOV R3, [R0+2] ; pos_y
-    MOV R4, [R0+4] ; Visible
+
+    MOV R2, [R0] ; pos x
+    MOV R3, [R0+2] ; pos y
     ADD R2, R6
     ADD R3, R5
+    
+    MOV [SET_COLUMN], R2
+    MOV [SET_LINE], R3
+    MOV R2, [R7] ; get color from adress
+    
+    MOV R3, [R0+4] ; Get visibility flag
+    CMP R3, 1
+    JZ set_pixel
+    MOV R2, 0
+
+    set_pixel:
+	    MOV  [SET_PIXEL], R2
+
+    POP R3
+    POP R2
+    RET 
+
+check_pixel_address:
+    PUSH R0
+    PUSH R5
+    PUSH R6
 
     MOV R7, [R1]
     MUL R5, R7
     ADD R5, R6
-    SHL R5, 1 ; get matrix offset for pixel (*2 due to byte-adressable design)
-    ADD R5, 4 ; memory offset to start at the pixel matrix
-    ADD R1, R5 ; get final memory address of correct pixel
-    MOV R7, [R1]
-
-    MOV  [SET_COLUMN], R2
-	MOV  [SET_LINE], R3
-    CMP R4, 1
-    JZ set_pixel
-    MOV R7, 0
-
-    set_pixel:
-	    MOV  [SET_PIXEL], R7
+    SHL R5, 1
+    ADD R5, 4
+    ADD R5, R1 ; get final memory address of correct pixel
     
-    end_draw_pixel:
-    POP R7
+    MOV R7, R5
+    MOV R0, [R7]
+    CMP R0, 0 ; check if pixel is empty
+
+    POP R6
     POP R5
-    POP R4
-    POP R3
-    POP R2
-    POP R1
+    POP R0
     RET
 
 ; ***************************************************************************
@@ -393,9 +405,9 @@ energy_update:
         RET
 
 ; ***************************************************************************
-; * ENERGY DISPLAY UPDATE
+; * UPDATE PROBE
 ; ***************************************************************************
-update_sonda:
+update_probe:
     PUSH R0             ; endereco base
     PUSH R1             ; linha
     PUSH R2             ; coluna
@@ -403,22 +415,22 @@ update_sonda:
     PUSH R4
     MOV R4, [EXECUTE_COMMAND]
     CMP R4, 1
-    JNZ end_update_sonda
+    JNZ end_update_probe
     MOV R4, [LAST_PRESSED_KEY]
     CMP R4, KEY_MOVE_PROBE
-    JNZ end_update_sonda
+    JNZ end_update_probe
 
     MOV R0, PROBE
     MOV R1, [R0]         ; x
     MOV R2, [R0+2]      ; y
     CMP R2, 0
-    JZ move_sonda_home
-    CALL delete_sonda
-    SUB R2, 1          ; subir sonda
+    JZ move_probe_home
+    CALL delete_probe
+    SUB R2, 1          ; subir probe
     MOV [R0+2], R2
-    CALL draw_sonda
+    CALL draw_probe
 
-    end_update_sonda:
+    end_update_probe:
         POP R4
         POP R3
         POP R2
@@ -426,16 +438,16 @@ update_sonda:
         POP R0
         RET 
 
-move_sonda_home:
+move_probe_home:
     PUSH R1
-    CALL delete_sonda
+    CALL delete_probe
     MOV R1, PROBE_START_Y
     MOV [R0+2], R1
-    CALL draw_sonda
+    CALL draw_probe
     POP R1
-    JMP end_update_sonda
+    JMP end_update_probe
 
-delete_sonda:
+delete_probe:
     PUSH R1
     PUSH R2
     MOV R2, R0
@@ -446,7 +458,7 @@ delete_sonda:
     POP R1
     RET
 
-draw_sonda:
+draw_probe:
     PUSH R1
     PUSH R2
     MOV R2, R0
