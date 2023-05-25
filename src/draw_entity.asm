@@ -92,6 +92,7 @@ draw_entity:
     PUSH R3
     PUSH R5
     PUSH R6
+    PUSH R7
     MOV R0, R2 ; Entity base address
     MOV R1, [R2+6] ; Sprite base address
     MOV R2, [R1] ; l
@@ -100,17 +101,22 @@ draw_entity:
     MOV R5, -1 ; offset y
     draw_from_table:
         ADD R5, 1
-        CMP R5, R3
+        CMP R5, R3 ; Reached last pixel already?
         JZ end_draw_entity
         MOV R6, 0 ; offset x
         inner_loop:
+            CALL get_pixel_address
+            JZ skip_draw
             CALL draw_pixel
-            ADD R6, 1
-            CMP R6, R2 ; Reached last pixel (length)?
+            
+            skip_draw:
+                ADD R6, 1
+                CMP R6, R2 ; Reached last pixel of line?
             JZ draw_from_table
             JMP inner_loop
 
     end_draw_entity:
+        POP R7
         POP R6
         POP R5
         POP R3
@@ -119,43 +125,39 @@ draw_entity:
         POP R0
         RET
 
-; R2 - pos_x; R3 - pos_y; R5 - offset y; R6 - offset x
 draw_pixel:
-    PUSH R1
     PUSH R2
     PUSH R3
-    PUSH R4
-    PUSH R5
-    PUSH R7
-    MOV R2, [R0] ; pos_x
-    MOV R3, [R0+2] ; pos_y
-    MOV R4, [R0+4] ; Visible
+
+    MOV R2, [R0] ; pos x
+    MOV R3, [R0+2] ; pos y
     ADD R2, R6
     ADD R3, R5
+    
+    MOV [SET_COLUMN], R2
+    MOV [SET_LINE], R3
+    MOV [SET_PIXEL], R7
+
+    POP R3
+    POP R2
+    RET 
+
+check_pixel_address:
+    PUSH R0
+    PUSH R5
+    PUSH R6
 
     MOV R7, [R1]
     MUL R5, R7
     ADD R5, R6
-    SHL R5, 1 ; get matrix offset for pixel (*2 due to byte-adressable design)
-    ADD R5, 4 ; memory offset to start at the pixel matrix
-    ADD R1, R5 ; get final memory address of correct pixel
-    MOV R7, [R1]
+    SHL R5, 1
+    ADD R5, 4
+    ADD R7, R5 ; get final memory address of correct pixel
 
-    MOV  [SET_COLUMN], R2
-	MOV  [SET_LINE], R3
-    CMP R4, 1
-    JZ set_pixel
-    MOV R7, 0
+    MOV R0, [R7]
+    CMP R0, 0 ; check if pixel is empty
 
-    set_pixel:
-	    MOV  [SET_PIXEL], R7
-    
-    end_draw_pixel:
-    POP R7
+    POP R6
     POP R5
-    POP R4
-    POP R3
-    POP R2
-    POP R1
+    POP R0
     RET
-  
