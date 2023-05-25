@@ -14,7 +14,7 @@
 - [ ] Asteroide no topo esquerdo que desce na diagonal....(ver pdf) {Tecla 5}   (David)
 - [X] Efeito sonoro quando o asteroide desce
 - [X] Sonda na direção do meio a subir...(ver pdf) {Tecla 1}  (Rodas)
-- [ ] Teclas para incrementar ou decrementar o valor dos displays {Tecla 6(+), Tecla 4(-)}  (Aleixo)
+- [X] Teclas para incrementar ou decrementar o valor dos displays {Tecla 6(+), Tecla 4(-)}  (Aleixo)
 
 <br/><br/>
 
