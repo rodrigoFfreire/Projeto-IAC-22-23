@@ -33,14 +33,16 @@ SCREEN_WIDTH       EQU 64
 SCREEN_HEIGHT      EQU 32
 SCREEN_ORIGIN      EQU 0
 
+; colors
 BLACK              EQU 0F000H
-GRAY               EQU 0F888H
+GREY               EQU 0F888H
 RED                EQU 0FF00H
 DARKRED            EQU 0FE00H
 GREEN              EQU 0F0F0H	
 DARKGREEN          EQU 0F0A0H	
 BROWN              EQU 0FA52H
 BLUE               EQU 0F06FH
+CYAN               EQU 0F0FFH
 WHITE              EQU 0FFFFH
 YELLOW             EQU 0FFF0H
 DARKYELLOW         EQU 0FFA3H
@@ -56,6 +58,9 @@ KEY_INCREMENT      EQU 6                       ; Increment Energy Display
 KEY_DECREMENT      EQU 4                       ; Decrement Energy Display
 KEY_MOVE_PROBE     EQU 1                       ; Move probe up
 KEY_MOVE_ASTEROID  EQU 5                       ; Move asteroid in diagonal
+
+; other constants
+PROBE_START_Y      EQU 26                      ; initial pos_y of probe
 
 
 ; ***************************************************************************
@@ -78,7 +83,7 @@ LAST_PRESSED_KEY:
 EXECUTE_COMMAND:
     WORD 0
 
-ENERGY:
+CURRENT_ENERGY:
     WORD 100
 
 ; Entities
@@ -148,7 +153,7 @@ initialize:
 
     ; Set energy to 100 and update display
     MOV R0, 100
-    MOV [ENERGY], R0
+    MOV [CURRENT_ENERGY], R0
     MOV [ENERGY_DISPLAYS], R0
 
     ; Draw entities first time
@@ -156,14 +161,14 @@ initialize:
     CALL draw_entity
     MOV R2, SPACESHIP
     CALL draw_entity
-    MOV R2, ASTEROID
-    CALL draw_entity
+    ;MOV R2, ASTEROID
+    ;CALL draw_entity
 
 
 game_loop:
     CALL keyboard_listner ; Listen for input
-    CALL command_handler ; Carry out correct command
-    CALL event_handler ; Update required events
+    CALL energy_update    ; Update energy display if needed
+    CALL update_sonda     ; Update probes movement if needed
 
     JMP game_loop
 
@@ -203,8 +208,8 @@ test_line:
     PUSH R2
     PUSH R3
     ; read from keyboard
-    MOV R2, TEC_LIN
-    MOV R3, TEC_COL
+    MOV R2, KEYBOARD_LINE
+    MOV R3, KEYBOARD_COLUMN
     MOVB [R2], R1
     MOVB R0, [R3]
 
@@ -260,4 +265,194 @@ convert_to_key_aux:
         CMP R6, 0
         JNZ keep_shifting
 
+    RET
+
+; ***************************************************************************
+; * DRAW ENTITY
+; ***************************************************************************
+draw_entity:
+    PUSH R0
+    PUSH R1
+    PUSH R2
+    PUSH R3
+    PUSH R5
+    PUSH R6
+    MOV R0, R2 ; Entity base address
+    MOV R1, [R2+6] ; Sprite base address
+    MOV R2, [R1] ; l
+    MOV R3, [R1+2] ; h
+
+    MOV R5, -1 ; offset y
+    draw_from_table:
+        ADD R5, 1
+        CMP R5, R3
+        JZ end_draw_entity
+        MOV R6, 0 ; offset x
+        inner_loop:
+            CALL draw_pixel
+            ADD R6, 1
+            CMP R6, R2 ; Reached last pixel (length)?
+            JZ draw_from_table
+            JMP inner_loop
+
+    end_draw_entity:
+        POP R6
+        POP R5
+        POP R3
+        POP R2
+        POP R1
+        POP R0
+        RET
+
+; R2 - pos_x; R3 - pos_y; R5 - offset y; R6 - offset x
+draw_pixel:
+    PUSH R1
+    PUSH R2
+    PUSH R3
+    PUSH R4
+    PUSH R5
+    PUSH R7
+    MOV R2, [R0] ; pos_x
+    MOV R3, [R0+2] ; pos_y
+    MOV R4, [R0+4] ; Visible
+    ADD R2, R6
+    ADD R3, R5
+
+    MOV R7, [R1]
+    MUL R5, R7
+    ADD R5, R6
+    SHL R5, 1 ; get matrix offset for pixel (*2 due to byte-adressable design)
+    ADD R5, 4 ; memory offset to start at the pixel matrix
+    ADD R1, R5 ; get final memory address of correct pixel
+    MOV R7, [R1]
+
+    MOV  [SET_COLUMN], R2
+	MOV  [SET_LINE], R3
+    CMP R4, 1
+    JZ set_pixel
+    MOV R7, 0
+
+    set_pixel:
+	    MOV  [SET_PIXEL], R7
+    
+    end_draw_pixel:
+    POP R7
+    POP R5
+    POP R4
+    POP R3
+    POP R2
+    POP R1
+    RET
+
+; ***************************************************************************
+; * ENERGY DISPLAY UPDATE
+; ***************************************************************************
+energy_update:
+    PUSH R6
+    PUSH R7
+
+    MOV R7, [EXECUTE_COMMAND]
+    CMP R7, 1
+    JNZ return_energy_update
+
+    MOV R7, [LAST_PRESSED_KEY]
+    CMP R7, KEY_DECREMENT
+    JZ energy_decrease
+    CMP R7, KEY_INCREMENT
+    JZ energy_increase
+    
+    JMP return_energy_update
+
+    energy_increase:
+        PUSH R10
+
+        MOV R10, [CURRENT_ENERGY] ;get current energy
+        ADD R10, 1 ; add 1
+        MOV [CURRENT_ENERGY], R10 ; save new energy 
+
+        POP R10
+        JMP return_energy_update
+	
+    energy_decrease:
+        PUSH R10
+
+        MOV R10, [CURRENT_ENERGY] ;get current energy
+        SUB R10, 1
+        MOV [CURRENT_ENERGY], R10
+
+        POP R10
+        JMP return_energy_update
+
+    return_energy_update:
+        MOV R6, ENERGY_DISPLAYS
+        MOV R7, [CURRENT_ENERGY]
+        MOV [R6], R7 ; Update displays
+
+        POP R7
+        POP R6
+        RET
+
+; ***************************************************************************
+; * ENERGY DISPLAY UPDATE
+; ***************************************************************************
+update_sonda:
+    PUSH R0             ; endereco base
+    PUSH R1             ; linha
+    PUSH R2             ; coluna
+    PUSH R3             ; cor
+    PUSH R4
+    MOV R4, [EXECUTE_COMMAND]
+    CMP R4, 1
+    JNZ end_update_sonda
+    MOV R4, [LAST_PRESSED_KEY]
+    CMP R4, KEY_MOVE_PROBE
+    JNZ end_update_sonda
+
+    MOV R0, PROBE
+    MOV R1, [R0]         ; x
+    MOV R2, [R0+2]      ; y
+    CMP R2, 0
+    JZ move_sonda_home
+    CALL delete_sonda
+    SUB R2, 1          ; subir sonda
+    MOV [R0+2], R2
+    CALL draw_sonda
+
+    end_update_sonda:
+        POP R4
+        POP R3
+        POP R2
+        POP R1
+        POP R0
+        RET 
+
+move_sonda_home:
+    PUSH R1
+    CALL delete_sonda
+    MOV R1, PROBE_START_Y
+    MOV [R0+2], R1
+    CALL draw_sonda
+    POP R1
+    JMP end_update_sonda
+
+delete_sonda:
+    PUSH R1
+    PUSH R2
+    MOV R2, R0
+    MOV R1, 0
+    MOV [R2+4], R1
+    CALL draw_entity
+    POP R2
+    POP R1
+    RET
+
+draw_sonda:
+    PUSH R1
+    PUSH R2
+    MOV R2, R0
+    MOV R1, 1
+    MOV [R2+4], R1
+    CALL draw_entity
+    POP R1
+    POP R2
     RET
