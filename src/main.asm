@@ -98,7 +98,7 @@ SPACESHIP:
     WORD 27, 27, 1, SPRITE_SPACESHIP; (x, y, visibility, sprite)
 
 PROBE:
-    WORD 26, 31, 1, SPRITE_PROBE; (x, y, visibility, sprite)
+    WORD 32, 26, 1, SPRITE_PROBE; (x, y, visibility, sprite)
 
 ;SPRITES
 SPRITE_SPACESHIP:
@@ -367,9 +367,9 @@ energy_update:
     JNZ return_energy_update      ; if execute_command is different than 1, do nothing
 
     MOV R7, [LAST_PRESSED_KEY]
-    CMP R7, TECLA_ESQUERDA        ; if last key pressed is 4, decrease 1 energy
+    CMP R7, KEY_DECREMENT        ; if last key pressed is 4, decrease 1 energy
     JZ energy_decrease
-    CMP R7, TECLA_DIREITA         ; if last key pressed is 6, increase 1 energy
+    CMP R7, KEY_INCREMENT         ; if last key pressed is 6, increase 1 energy
     JZ energy_increase
     
     JMP return_energy_update
@@ -395,6 +395,8 @@ energy_update:
         JMP return_energy_update
 
     return_energy_update:
+        MOV R7, [CURRENT_ENERGY]
+        MOV [ENERGY_DISPLAYS], R7
         POP R7
         RET
 
