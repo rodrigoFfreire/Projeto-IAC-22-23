@@ -3,9 +3,10 @@
 
 
 # Indice
-1. [CheckList Versao intermedia](#CheckList-Versao-Intermedia)
-2. [TODO](#TODO) 
-3. [Tutorial Git](#Tutorial-Git)
+1. [CheckList Versão intermédia](#CheckList-Versão-Intermédia)
+2. [TODO](#TODO)
+3. [Documentação Rotinas](#Documentação-Rotinas) 
+4. [Tutorial Git](#Tutorial-Git)
 
 ## CheckList Versao Intermedia
 - [X] Teclado completamente functional (Rodas)
@@ -35,6 +36,73 @@
   - [X] Nave Destruida
   - [X] Jogo terminado
 
+<br/><br/>
+
+## Documentação Rotinas
+Encontra-se aqui em baixo informações sobre as rotinas principais do jogo como registos de argumentos, memoria acedida etc...
+
+### **LISTEN_KEYBOARD**
+Testa todas as linhas do teclado até encontrar uma tecla premida
+- **Argumentos**
+  - Nenhum
+- **Memoria Acedida/Escrita**
+  - Escreve em ```LAST_PRESSED_KEY``` o número da ultima tecla premida (0-F)
+  - Lê/Escreve em ```EXECUTE_COMMAND``` -1 / 0 / 1 para indicar se um comando deve ser executado ou não (previne spam do teclado ao não largar a tecla)
+
+**Como usar para detetar uma tecla para ativar uma funcionalidade?**
+Ex: Fazer algo acontecer se a Tecla 5 for premida
+```asm
+  rotina_exemplo:
+      MOV RX, [LAST_PRESSED_KEY]
+      CMP RX, 5                   ; Tecla desejada
+      JNZ return_rotina_exemplo   ; Salta para o final
+      
+      CMP RX, [EXECUTE_COMMAND]
+      CMP RX, 1                   ; EXECUTE_COMMAND em modo ativo
+      JNZ return_rotina_exemplo   ; Salta para o final
+      
+      ; Resto da rotina. (Codigo vai para aqui apenas se os dois CMP de cima derem certo)
+      
+      return_rotina_exemplo:      ; Final da rotina 
+          RET
+ ```
+
+<br/><br/>
+
+### **DRAW_ENTITY**
+Desenha qualquer entidade guardada na memória
+- **Argumentos**
+  - R2 <- Endereço da entidade
+- **Memoria Acedida/Escrita**
+  - Desenha no ecrã o sprite da entidade
+  - Lê da memória uma entidade guardada da seguinte forma ```WORD: pos_x, pos_y, state, sprite```
+
+**Como usar para desenhar uma entidade?**
+Ex: Desenhar a entidade ```SPACE_SHIP```
+```asm
+  PLACE 1000H
+  ; ...
+  
+  SPACE_SHIP:
+    WORD 27, 27, 1, SPRITE_SPACESHIP; (pos_x, pos_y, state, sprite)
+    
+  SPRITE_SPACESHIP:
+    WORD  11; length
+    WORD  5; height
+    ; Pixel Matrix
+    WORD  0, 0, BROWN, BROWN, BROWN, BROWN, BROWN, BROWN, BROWN, 0, 0
+    WORD  0, BROWN, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BROWN, 0
+    WORD  BROWN, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BROWN 
+    WORD  BROWN, YELLOW, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, YELLOW, BROWN 
+    WORD  BROWN, YELLOW, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, YELLOW, BROWN
+    
+  PLACE 0
+  ; ...
+  MOV R2, SPACE_SHIP
+  CALL draw_entity
+ ```
+
+<br/><br/>
 
 ## Tutorial Git (Fork, Pull Requests, Merge...)
 - No **VSCode** instalem a extensão **GitHub Pull Requests and Issues** ![ ](git-tutorial/pullreq_ext.PNG) 
