@@ -29,8 +29,8 @@ SET_BACKGROUND     EQU MEDIA_COMMAND + 42H
 CLEAR_SCREEN	   EQU MEDIA_COMMAND + 02H
 DELETE_WARNING     EQU MEDIA_COMMAND + 40H
 
-SCREEN_WIDTH       EQU 64
-SCREEN_HEIGHT      EQU 32
+SCREEN_WIDTH       EQU 63
+SCREEN_HEIGHT      EQU 31
 SCREEN_ORIGIN      EQU 0
 
 ; colors
@@ -312,14 +312,15 @@ event_handler:
 
 move_probe:
     MOV R2, PROBE
+    MOV R3, [R2]   ; current x
     MOV R4, [R2+2] ; current y
 
-    MOV R5, PROBE_START_Y
+    MOV R5, SCREEN_ORIGIN
     CMP R4, R5              ; check if probe needs to be moved home
     JNZ end_move_probe
     
-    ADD R5, 1     ; account for last SUB
-    MOV R4, R5    ; move probe home
+    MOV R4, PROBE_START_Y    ; move probe home
+    ADD R4, 1     ; account for last SUB
     end_move_probe:
         SUB R4, 1 ; move y 1 up
         CALL update_object
@@ -331,7 +332,8 @@ move_asteroid:
     
     MOV R3, [R2]   ; current x
     MOV R4, [R2+2] ; current y
-    MOV R4, ASTEROID_START_Y      ; check if asteroid needs to be moved home
+    MOV R5, SCREEN_HEIGHT 
+    CMP R4, R5      ; check if asteroid needs to be moved home
     JNZ end_move_asteroid
 
     MOV R3, ASTEROID_START_X
@@ -369,8 +371,6 @@ increment_energy:
 update_object:
 	PUSH R1
 	PUSH R2
-	PUSH R3 ; X NOVO
-    PUSH R4 ; Y NOVO
 	PUSH R5
 	
 	MOV R5, [R2+4] ; GET ENTITY STATE
@@ -389,11 +389,10 @@ update_object:
     CALL draw_entity ; DRAW OBJECT IN NEW COORDINATES 
 
 	return_update_object:
-    PUSH R5
-    PUSH R4
-    PUSH R3
-    PUSH R2
-    PUSH R1
+    POP R5
+    POP R2
+    POP R1
+    RET
 
 
 ; ***************************************************************************
