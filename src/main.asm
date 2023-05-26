@@ -61,6 +61,8 @@ KEY_MOVE_ASTEROID  EQU 5                       ; Move asteroid in diagonal
 
 ; other constants
 PROBE_START_Y      EQU 26                      ; initial pos_y of probe
+ASTEROID_START_X   EQU 0
+ASTEROID_START_Y   EQU 0
 
 
 ; ***************************************************************************
@@ -134,7 +136,12 @@ FRIEND_SPRITES:
     WORD  0, DARKGREEN, 0, DARKGREEN, 0
     WORD  GREEN, 0, DARKGREEN, 0, GREEN
     WORD  GREEN, GREEN, 0, GREEN, GREEN
- 
+
+PROBE_UPDATE_FLAG:
+    WORD 0
+
+ASTEROID_UPDATE_FLAG:
+    WORD 0
 
 
 ; ***************************************************************************
@@ -161,15 +168,14 @@ initialize:
     CALL draw_entity
     MOV R2, SPACESHIP
     CALL draw_entity
-    ;MOV R2, ASTEROID
-    ;CALL draw_entity
+    MOV R2, ASTEROIDS
+    ADD R2, 2
+    CALL draw_entity
 
 
 game_loop:
     CALL keyboard_listner ; Listen for input
-    CALL energy_update    ; Update energy display if needed
-    CALL update_probe     ; Update probes movement if needed
-
+    CALL event_handler    ; carry out keyboard commands
     JMP game_loop
 
 
@@ -267,6 +273,129 @@ convert_to_key_aux:
 
     RET
 
+
+; ***************************************************************************
+; * EVENT_HANDLER
+; ***************************************************************************
+event_handler:
+    PUSH R0
+    PUSH R2
+    PUSH R3
+    PUSH R4
+    PUSH R5
+
+    MOV R0, [EXECUTE_COMMAND]
+    CMP R0, 1
+    JNZ end_event_handler
+
+    MOV R0, [LAST_PRESSED_KEY]
+    CMP R0, KEY_MOVE_PROBE
+    JZ move_probe
+
+    CMP R0, KEY_MOVE_ASTEROID
+    JZ move_asteroid
+
+    CMP R0, KEY_DECREMENT
+    JZ decrement_energy
+
+    CMP R0, KEY_INCREMENT
+    JZ increment_energy
+
+    end_event_handler:
+        POP R5
+        POP R4
+        POP R3
+        POP R2
+        POP R0
+        RET
+
+
+move_probe:
+    MOV R2, PROBE
+    MOV R4, [R2+2] ; current y
+
+    MOV R5, PROBE_START_Y
+    CMP R4, R5              ; check if probe needs to be moved home
+    JNZ end_move_probe
+    
+    ADD R5, 1     ; account for last SUB
+    MOV R4, R5    ; move probe home
+    end_move_probe:
+        SUB R4, 1 ; move y 1 up
+        CALL update_object
+        JMP end_event_handler
+
+move_asteroid:
+    MOV R2, ASTEROIDS
+    ADD R2, 2  ; get address of first asteroid
+    
+    MOV R3, [R2]   ; current x
+    MOV R4, [R2+2] ; current y
+    MOV R4, ASTEROID_START_Y      ; check if asteroid needs to be moved home
+    JNZ end_move_asteroid
+
+    MOV R3, ASTEROID_START_X
+    MOV R4, ASTEROID_START_Y     ; move asteroid home
+    SUB R3, 1
+    SUB R4, 1                   ; account for last ADDs
+    end_move_asteroid:
+        ADD R3, 1
+        ADD R4, 1
+        CALL update_object
+        JMP end_event_handler
+
+decrement_energy:
+    MOV R0, [CURRENT_ENERGY]
+    SUB R0, 1
+    MOV [CURRENT_ENERGY], R0
+
+    MOV R0, [CURRENT_ENERGY]
+    MOV [ENERGY_DISPLAYS], R0
+    JMP end_event_handler
+
+increment_energy:
+    MOV R0, [CURRENT_ENERGY]
+    ADD R0, 1
+    MOV [CURRENT_ENERGY], R0
+
+    MOV R0, [CURRENT_ENERGY]
+    MOV [ENERGY_DISPLAYS], R0
+    JMP end_event_handler
+
+
+; ***************************************************************************
+; * UPDATE_OBJECT
+; ***************************************************************************
+update_object:
+	PUSH R1
+	PUSH R2
+	PUSH R3 ; X NOVO
+    PUSH R4 ; Y NOVO
+	PUSH R5
+	
+	MOV R5, [R2+4] ; GET ENTITY STATE
+	CMP R5, 0
+	JZ return_update_object ; IF OBJECT IS INVISIBLE IGNORE
+	
+    MOV R1, 0
+    MOV [R2+4], R1    ; IF OBJECT IS VISIBLE, TURN IT'S FLAG TO 0 TO BECOME INVISIBLE
+    CALL draw_entity  ; DRAW OBJECT INVISIBLE (DELETE PREVIOUS OBJECT)
+
+	MOV [R2], R3  ; UPDATE MEMORY OF OBJECT WITH NEW X POSITION
+	MOV [R2+2], R4  ; UPDATE MEMORY OF OBJECT WITH NEW Y POSITION
+
+    MOV R1, 1
+    MOV [R2+4], R1   ; AFTER UPDATING POSITION TURN OF VISIBILITY FLAG TO 1 SO IT BECOMES VISIBLE
+    CALL draw_entity ; DRAW OBJECT IN NEW COORDINATES 
+
+	return_update_object:
+    PUSH R5
+    PUSH R4
+    PUSH R3
+    PUSH R2
+    PUSH R1
+
+
 ; ***************************************************************************
 ; * DRAW ENTITY
 ; ***************************************************************************
@@ -355,197 +484,3 @@ check_pixel_address:
     POP R5
     POP R0
     RET
-
-; ***************************************************************************
-; * ENERGY DISPLAY UPDATE
-; ***************************************************************************
-energy_update:
-    PUSH R7
-
-    MOV R7, [EXECUTE_COMMAND]
-    CMP R7, 1
-    JNZ return_energy_update      ; if execute_command is different than 1, do nothing
-
-    MOV R7, [LAST_PRESSED_KEY]
-    CMP R7, KEY_DECREMENT        ; if last key pressed is 4, decrease 1 energy
-    JZ energy_decrease
-    CMP R7, KEY_INCREMENT         ; if last key pressed is 6, increase 1 energy
-    JZ energy_increase
-    
-    JMP return_energy_update
-
-    energy_increase:
-        PUSH R10
-
-        MOV R10, [CURRENT_ENERGY] ; get current energy
-        ADD R10, 1                ; add 1
-        MOV [CURRENT_ENERGY], R10 ; save new energy 
-
-        POP R10
-        JMP return_energy_update
-	
-    energy_decrease:
-        PUSH R10
-
-        MOV R10, [CURRENT_ENERGY] ; get current energy
-        SUB R10, 1                ; subtract 1
-        MOV [CURRENT_ENERGY], R10 ; save new energy
-
-        POP R10
-        JMP return_energy_update
-
-    return_energy_update:
-        MOV R7, [CURRENT_ENERGY]
-        MOV [ENERGY_DISPLAYS], R7
-        POP R7
-        RET
-
-; ***************************************************************************
-; * UPDATE PROBE
-; ***************************************************************************
-update_probe:
-    PUSH R0             ; endereco base
-    PUSH R1             ; linha
-    PUSH R2             ; coluna
-    PUSH R3             ; cor
-    PUSH R4
-    MOV R4, [EXECUTE_COMMAND]
-    CMP R4, 1
-    JNZ end_update_probe
-    MOV R4, [LAST_PRESSED_KEY]
-    CMP R4, KEY_MOVE_PROBE
-    JNZ end_update_probe
-
-    MOV R0, PROBE
-    MOV R1, [R0]         ; x
-    MOV R2, [R0+2]      ; y
-    CMP R2, 0
-    JZ move_probe_home
-    CALL delete_probe
-    SUB R2, 1          ; subir probe
-    MOV [R0+2], R2
-    CALL draw_probe
-
-    end_update_probe:
-        POP R4
-        POP R3
-        POP R2
-        POP R1
-        POP R0
-        RET 
-
-move_probe_home:
-    PUSH R1
-    CALL delete_probe
-    MOV R1, PROBE_START_Y
-    MOV [R0+2], R1
-    CALL draw_probe
-    POP R1
-    JMP end_update_probe
-
-delete_probe:
-    PUSH R1
-    PUSH R2
-    MOV R2, R0
-    MOV R1, 0
-    MOV [R2+4], R1
-    CALL draw_entity
-    POP R2
-    POP R1
-    RET
-
-draw_probe:
-    PUSH R1
-    PUSH R2
-    MOV R2, R0
-    MOV R1, 1
-    MOV [R2+4], R1
-    CALL draw_entity
-    POP R1
-    POP R2
-    RET
-
-
-; ***************************************************************************
-; * ASTEROID
-; ***************************************************************************
-
-asteroid:
-    MOV R0, [LAST_PRESSED_KEY]
-    MOV R0, 5
-    JNZ return_asteroid
-
-    CMP R0, [EXECUTE_COMMAND]
-    CMP R0, 1
-    JNZ return_asteroid
-
-    update_asteroid:
-        PUSH R0             ; endereco base
-        PUSH R1             ; linha
-        PUSH R2             ; coluna
-        PUSH R3             ; cor
-        PUSH R4
-        MOV R4, [EXECUTE_COMMAND]
-        CMP R4, 1
-        JNZ end_update_asteroid
-        MOV R4, [LAST_PRESSED_KEY]
-        CMP R4, KEY_MOVE_ASTEROID
-        JNZ end_update_asteroid
-
-        MOV R0, ASTEROIDS
-        MOV R0, [R0 + 2]
-        MOV R1, [R0]         ; x
-        MOV R2, [R0+2]      ; y
-        CMP R2, 31
-        JZ move_asteroid_home
-        CALL delete_asteroid
-        ADD R1, 1          ; subir asteroid
-        ADD R2, 1          ; subir asteroid
-        MOV [R0], R1
-        MOV [R0+2], R2
-        CALL draw_asteroid
-
-        end_update_asteroid:
-            POP R4
-            POP R3
-            POP R2
-            POP R1
-            POP R0
-            RET 
-
-    move_asteroid_home:
-        PUSH R1
-        CALL delete_asteroid
-        MOV R1, 0
-        MOV [R0+2], 0
-        MOV [R0], 0
-        CALL draw_asteroid
-        POP R1
-        JMP end_update_asteroid
-
-    delete_asteroid:
-        PUSH R1
-        PUSH R2
-        MOV R2, R0
-        MOV R1, 0
-        MOV [R2+4], R1
-        CALL draw_entity
-        POP R2
-        POP R1
-        RET
-
-    draw_asteroid:
-        PUSH R1
-        PUSH R2
-        MOV R2, R0
-        MOV R1, 1
-        MOV [R2+4], R1
-        CALL draw_entity
-        POP R1
-        POP R2
-        RET
-
-
-    return_asteroid:
-        RET
-   
