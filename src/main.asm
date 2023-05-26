@@ -327,6 +327,9 @@ move_probe:
         JMP end_event_handler
 
 move_asteroid:
+    MOV R2, 0
+    MOV [PLAY_AUDIO], R2
+
     MOV R2, ASTEROIDS
     ADD R2, 2  ; get address of first asteroid
     
