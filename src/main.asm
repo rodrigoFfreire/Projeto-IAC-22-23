@@ -178,7 +178,7 @@ game_loop:
 ; ***************************************************************************
 ; * KEYBOARD LISTNER
 ; * _________________________________________________________________________
-; * R0 - Current column
+; * R0 - Current column, execute command flag
 ; * R1 - Current line, Converted key, execute command flag 
 ; * R4 - Number of max lines (each bit is a line so 4 lines = 4bits -> 8)
 ; ***************************************************************************
@@ -227,12 +227,12 @@ test_line:
 
 press_key:
     CALL convert_to_key       ; R1 will contain converted key
-    MOV R1, [EXECUTE_COMMAND] ; Read execute flag if 0 means last key was released
-    CMP R1, 0                 ; Check if last cycle key was released then store_key
+    MOV R0, [EXECUTE_COMMAND] ; Read execute flag if 0 means last key was released
+    CMP R0, 0                 ; Check if last cycle key was released then store_key
     JZ store_key
 
-    MOV R1, -1 ; Last key was not released so put flag to -1
-    MOV [EXECUTE_COMMAND], R1 ; Lock command execution due to key not released
+    MOV R0, -1 ; Last key was not released so put flag to -1
+    MOV [EXECUTE_COMMAND], R0 ; Lock command execution due to key not released
     JMP end_keyboard_listner ; Nothing to store just end the listner
 
     store_key:
