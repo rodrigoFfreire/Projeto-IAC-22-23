@@ -464,3 +464,88 @@ draw_probe:
     POP R1
     POP R2
     RET
+
+
+; ***************************************************************************
+; * ASTEROID
+; ***************************************************************************
+
+asteroid:
+    MOV R0, [LAST_PRESSED_KEY]
+    MOV R0, 5
+    JNZ return_asteroid
+
+    CMP R0, [EXECUTE_COMMAND]
+    CMP R0, 1
+    JNZ return_asteroid
+
+    update_asteroid:
+        PUSH R0             ; endereco base
+        PUSH R1             ; linha
+        PUSH R2             ; coluna
+        PUSH R3             ; cor
+        PUSH R4
+        MOV R4, [EXECUTE_COMMAND]
+        CMP R4, 1
+        JNZ end_update_asteroid
+        MOV R4, [LAST_PRESSED_KEY]
+        CMP R4, KEY_MOVE_ASTEROID
+        JNZ end_update_asteroid
+
+        MOV R0, ASTEROIDS
+        MOV R0, [R0 + 2]
+        MOV R1, [R0]         ; x
+        MOV R2, [R0+2]      ; y
+        CMP R2, 31
+        JZ move_asteroid_home
+        CALL delete_asteroid
+        ADD R1, 1          ; subir asteroid
+        ADD R2, 1          ; subir asteroid
+        MOV [R0], R1
+        MOV [R0+2], R2
+        CALL draw_asteroid
+
+        end_update_asteroid:
+            POP R4
+            POP R3
+            POP R2
+            POP R1
+            POP R0
+            RET 
+
+    move_asteroid_home:
+        PUSH R1
+        CALL delete_asteroid
+        MOV R1, 0
+        MOV [R0+2], 0
+        MOV [R0], 0
+        CALL draw_asteroid
+        POP R1
+        JMP end_update_asteroid
+
+    delete_asteroid:
+        PUSH R1
+        PUSH R2
+        MOV R2, R0
+        MOV R1, 0
+        MOV [R2+4], R1
+        CALL draw_entity
+        POP R2
+        POP R1
+        RET
+
+    draw_asteroid:
+        PUSH R1
+        PUSH R2
+        MOV R2, R0
+        MOV R1, 1
+        MOV [R2+4], R1
+        CALL draw_entity
+        POP R1
+        POP R2
+        RET
+
+
+    return_asteroid:
+        RET
+   
