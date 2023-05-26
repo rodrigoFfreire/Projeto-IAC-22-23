@@ -497,7 +497,7 @@ check_pixel_address:
     MOV R7, [R1] ; Get sprite length
     MUL R5, R7   ; 2D coords into 1D -> length*x + y
     ADD R5, R6   ; 2D coords into 1D -> length*x + y
-    MUL R5, 1    ; Multiply by 2 due to byte-adressable memory design (only pair addresses)
+    SHL R5, 1    ; Multiply by 2 due to byte-adressable memory design (only pair addresses)
     ADD R5, 4    ; Add offset of 4 because the table starts at (Base Address + 4)
     ADD R5, R1   ; Add the base address of object and get final address
     
