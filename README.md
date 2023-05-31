@@ -26,7 +26,7 @@
 - [ ] Random Number Generator  (David)
 - [ ] Sonda desaparece apos 12 movimentos
 - [ ] Colisões
-- [ ] Atualizacao da energia + converter hexa para decimal
+- [ ] Atualizacao da energia + converter hexa para decimal  (Aleixo)
 - [ ] Menus + Sons + backgrounds (Verificar condicoes: sem energia, colisao com a nave, terminar pela tecla, pausa)
   
 - [ ] Controlo (para tratar das teclas de começar, suspender/continuar e terminar o jogo).
