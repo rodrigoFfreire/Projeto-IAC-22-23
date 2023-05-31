@@ -23,10 +23,10 @@
   - Animação asteroide a explodir
   - Animação asteroide amigavel
 - [ ] Criar tabela de objetos (3 sondas, 4 asteroides)  (Aleixo)
-- [ ] Random Number Generator  (David)
+- [ ] Random Number Generator
 - [ ] Sonda desaparece apos 12 movimentos
 - [ ] Colisões
-- [ ] Atualizacao da energia + converter hexa para decimal  (Aleixo)
+- [ ] Atualizacao da energia + converter hexa para decimal
 - [ ] Menus + Sons + backgrounds (Verificar condicoes: sem energia, colisao com a nave, terminar pela tecla, pausa)
   
 - [ ] Controlo (para tratar das teclas de começar, suspender/continuar e terminar o jogo).
