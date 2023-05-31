@@ -578,6 +578,9 @@ navpanel_exception:
 
 
 ; RANDOM NUMBER GEN
+; Arguments:
+;   - R10 : Range of numbers
+; Returns R9 : Final Random number
 rnd_generator:
     MOVB R9, [PIN_IN] ; Read bits from "air"
     SHR R9, 4         ; Put bits in low nibble
