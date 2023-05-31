@@ -3,38 +3,39 @@
 
 
 # Indice
-1. [CheckList Versão intermédia](#CheckList-Versão-Intermédia)
-2. [TODO](#TODO)
-3. [Documentação Rotinas](#Documentação-Rotinas) 
-4. [Tutorial Git](#Tutorial-Git)
-
-## CheckList Versao Intermedia
-- [X] Teclado completamente functional (Rodas)
-- [X] Painel de instrumentos  (Aleixo)
-- [X] Cenario de fundo
-- [ ] Asteroide no topo esquerdo que desce na diagonal....(ver pdf) {Tecla 5}   (David)
-- [X] Efeito sonoro quando o asteroide desce
-- [X] Sonda na direção do meio a subir...(ver pdf) {Tecla 1}  (Rodas)
-- [X] Teclas para incrementar ou decrementar o valor dos displays {Tecla 6(+), Tecla 4(-)}  (Aleixo)
+1. [TODO](#TODO)
+2. [Documentação Rotinas](#Documentação-Rotinas) 
+3. [Tutorial Git](#Tutorial-Git)
 
 <br/><br/>
 
 ## TODO (Lista de coisas para fazer)
-- [X] Cenarios de Fundo:    (Rodas)
-  - [X] Main menu
-  - [X] Video de fundo durante o jogo
-  - [X] Texto de Pausa
-  - [X] Jogo Terminado
-  - [X] Nave Explodiu
-  - [X] Nave sem Energia
-<br/><br/>
-- [X] Sound Effects:    (Rodas)
-  - [X] Sonda Lançada
-  - [X] Asteroide Destruido
-  - [X] Energia Minerada
-  - [X] Som de Pausa/Retomar
-  - [X] Nave Destruida
-  - [X] Jogo terminado
+- [ ] Temporizações (Interrupções)
+  - EI0 -> Update movimento asteroids
+  - EI1 -> Update movimento sondas
+  - EI2 -> Descrescimo da energia
+  - EI3 -> Update animação do painel
+
+- [ ] Menu Inicial
+- [ ] Refazer texturas + Animações(painel, asteroides)
+  - Animação do painel
+  - Animação asteroide a explodir
+  - Animação asteroide amigavel
+- [ ] Criar tabela de objetos (3 sondas, 4 asteroides)
+- [ ] Random Number Generator
+- [ ] Sonda desaparece apos 12 movimentos
+- [ ] Colisões
+- [ ] Atualizacao da energia + converter hexa para decimal
+- [ ] Menus + Sons + backgrounds (Verificar condicoes: sem energia, colisao com a nave, terminar pela tecla, pausa)
+  
+- [ ] Controlo (para tratar das teclas de começar, suspender/continuar e terminar o jogo).
+- [ ] Nave (para desenhar o painel de instrumentos e produzir o efeito das luzes);
+- [ ] Energia da nave (para implementar o gasto periódico de energia);
+- [ ] Sonda (para controlar o lançamento, implementar o movimento, o limite do alcance e a deteção 
+ de colisão de cada sonda);
+- [ ] Asteroide (para controlar as ações e evolução de cada um dos asteroides, incluindo verificação 
+de colisão com a nave).
+
 
 <br/><br/>
 
