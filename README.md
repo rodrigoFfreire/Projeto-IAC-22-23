@@ -4,8 +4,7 @@
 
 # Indice
 1. [TODO](#TODO)
-2. [Documentação Rotinas](#Documentação-Rotinas) 
-3. [Tutorial Git](#Tutorial-Git)
+2. [Documentação Rotinas](#Documentação-Rotinas)
 
 <br/><br/>
 
@@ -104,15 +103,30 @@ Ex: Desenhar a entidade ```SPACE_SHIP```
   CALL draw_entity
  ```
 
-<br/><br/>
+### **RND_GENERATOR**
+Gera um número aleatório numa range N especificada [0;N] (N <= 15)
+- **Argumentos**
+  - R10 <- Range
+- **Retorna**
+  - R9 -> Numero aleatorio entre [0;N]
 
-## Tutorial Git (Fork, Pull Requests, Merge...)
-- No **VSCode** instalem a extensão **GitHub Pull Requests and Issues** ![ ](git-tutorial/pullreq_ext.PNG) 
-- Fazer **Fork** deste projeto 
-- ![ ](git-tutorial/Fork.PNG)
-- Fazer **clone** do repositorio forked. Não façam clone do repositorio original
-- Quando tiverem feito clone é fazer como antigamente:
-  - Dar **pull** para dar refresh, dar **commit** e **push** etc... (como foi no gitlab)
-- Quando tiverem dado **push** e quiserem submeter partes do projeto já prontas têm que fazer um **Pull Request**
-  - Vão onde diz **Github: Pull Requests**. Aquilo vai aparecer um botao com um simbolo para adicionar cliquem nisso ![ ](git-tutorial/pullreq1.PNG)
-  - E verifiquem se esta tudo certo como na imagem, ponham um titulo e descricao a dizer o que é que fizeram e tal etc.... ![ ](git-tutorial/pullreq2.PNG)
+**Como usar?**
+Ex: Obter número aleatorio de 0 a 5, se for 3 chama uma rotina X
+```asm
+rotina_exemplo:
+  PUSH R9
+  PUSH R10
+
+  MOV R10, 5 ; para obter um numero entre 0 e 5
+  CALL rnd_generator
+  
+  CMP R9, 3
+  JNZ end
+
+  CALL rotina_x
+
+  end:
+    POP R10
+    POP R9
+    RET
+```
