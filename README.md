@@ -9,7 +9,7 @@
 <br/><br/>
 
 ## TODO (Lista de coisas para fazer)
-- [X] Temporizações (Interrupções)    (Rodas)
+- [X] ~~Temporizações (Interrupções)    (Rodas)
   - EI0 -> Update movimento asteroids
   - EI1 -> Update movimento sondas
   - EI2 -> Descrescimo da energia
@@ -22,7 +22,7 @@
   - Animação asteroide a explodir
   - Animação asteroide amigavel
 - [ ] Criar tabela de objetos (3 sondas, 4 asteroides)  (Aleixo)
-- [ ] Random Number Generator   (Rodas)
+- [X] ~~Random Number Generator   (Rodas)
 - [ ] Sonda desaparece apos 12 movimentos
 - [ ] Colisões
 - [ ] Atualizacao da energia + converter hexa para decimal
