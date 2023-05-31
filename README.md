@@ -23,7 +23,7 @@
   - Animação asteroide a explodir
   - Animação asteroide amigavel
 - [ ] Criar tabela de objetos (3 sondas, 4 asteroides)  (Aleixo)
-- [ ] Random Number Generator
+- [ ] Random Number Generator   (Rodas)
 - [ ] Sonda desaparece apos 12 movimentos
 - [ ] Colisões
 - [ ] Atualizacao da energia + converter hexa para decimal
