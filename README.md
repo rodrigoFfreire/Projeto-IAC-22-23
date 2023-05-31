@@ -36,7 +36,6 @@
 - [ ] Asteroide (para controlar as ações e evolução de cada um dos asteroides, incluindo verificação 
 de colisão com a nave).
 
-
 <br/><br/>
 
 ## Documentação Rotinas
@@ -102,6 +101,8 @@ Ex: Desenhar a entidade ```SPACE_SHIP```
   MOV R2, SPACE_SHIP
   CALL draw_entity
  ```
+
+<br/><br/>
 
 ### **RND_GENERATOR**
 Gera um número aleatório numa range N especificada [0;N] (N <= 15)
