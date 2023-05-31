@@ -10,19 +10,20 @@
 <br/><br/>
 
 ## TODO (Lista de coisas para fazer)
-- [ ] Temporizações (Interrupções)    (Rodas)
+- [X] Temporizações (Interrupções)    (Rodas)
   - EI0 -> Update movimento asteroids
   - EI1 -> Update movimento sondas
   - EI2 -> Descrescimo da energia
   - EI3 -> Update animação do painel
 
 - [ ] Menu Inicial  (David)
+- [ ] Rotinas de Atualizacao (asteroids, sondas, energia, painel) (Rodas)
 - [ ] Refazer texturas + Animações(painel, asteroides)  (Aleixo)
   - Animação do painel
   - Animação asteroide a explodir
   - Animação asteroide amigavel
 - [ ] Criar tabela de objetos (3 sondas, 4 asteroides)  (Aleixo)
-- [ ] Random Number Generator
+- [ ] Random Number Generator  (David)
 - [ ] Sonda desaparece apos 12 movimentos
 - [ ] Colisões
 - [ ] Atualizacao da energia + converter hexa para decimal
