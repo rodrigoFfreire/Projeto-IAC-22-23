@@ -15,6 +15,8 @@
 KEYBOARD_LINE      EQU 0C000H                   ; (POUT-2)
 KEYBOARD_COLUMN    EQU 0E000H                   ; (PIN)
 MASK               EQU 0FH                      ; Get low nibble only
+; Different because the same address is used in different situations
+PIN_IN             EQU 0E000H                   ; (PIN)
 
 ; Energy
 ENERGY_DISPLAYS    EQU 0A000H                   ; (POUT-1)
@@ -542,7 +544,7 @@ asteroids_exception:
     PUSH R0
 
     MOV R0, 1
-    MOV [ASTEROIDS_UPDATE_FLAG], R0
+    MOV [ASTEROIDS_UPDATE_FLAG], R0 ; Activate flag (flag=1)
 
     POP R0
     RFE
@@ -551,7 +553,7 @@ probes_exception:
     PUSH R0
 
     MOV R0, 1
-    MOV [PROBES_UPDATE_FLAG], R0
+    MOV [PROBES_UPDATE_FLAG], R0 ; Activate flag (flag=1)
 
     POP R0
     RFE
@@ -560,7 +562,7 @@ energy_exception:
     PUSH R0
 
     MOV R0, 1
-    MOV [ENERGY_UPDATE_FLAG], R0
+    MOV [ENERGY_UPDATE_FLAG], R0 ; Activate flag (flag=1)
 
     POP R0
     RFE
@@ -569,7 +571,15 @@ navpanel_exception:
     PUSH R0
 
     MOV R0, 1
-    MOV [NAVPANEL_UPDATE_FLAG], R0
+    MOV [NAVPANEL_UPDATE_FLAG], R0 ; Activate flag (flag=1)
 
     POP R0
     RFE
+
+
+; RANDOM NUMBER GEN
+rnd_generator:
+    MOVB R9, [PIN_IN] ; Read bits from "air"
+    SHR R9, 4         ; Put bits in low nibble
+    MOD R9, R10       ; Mod by the argument passed by R10
+    RET
