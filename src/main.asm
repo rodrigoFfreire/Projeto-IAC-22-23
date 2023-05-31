@@ -74,6 +74,7 @@ pilha:
 
 SP_INICIAL:
 
+
 ; Control variables
 LAST_PRESSED_KEY:
     WORD -1 ; Start with default value   
@@ -133,10 +134,24 @@ FRIEND_SPRITES:
     WORD GREEN, 0, DARKGREEN, 0, GREEN
     WORD GREEN, GREEN, 0, GREEN, GREEN
 
-PROBE_UPDATE_FLAG:
+; Exceptions Table
+EXCEPTIONS:
+    WORD asteroids_exception
+    WORD probes_exception
+    WORD energy_exception
+    WORD navpanel_exception
+
+; Exception Flags
+ASTEROIDS_UPDATE_FLAG:
     WORD 0
 
-ASTEROID_UPDATE_FLAG:
+PROBES_UPDATE_FLAG:
+    WORD 0
+
+ENERGY_UPDATE_FLAG:
+    WORD 0
+
+NAVPANEL_UPDATE_FLAG:
     WORD 0
 
 
@@ -147,32 +162,44 @@ PLACE 0
 
 initialize:
     MOV SP, SP_INICIAL       ; Initialize Stack Pointer
+    MOV BTE, EXCEPTIONS      ; Initialize Exception Table
     MOV [DELETE_WARNING], R1 ; Clear warnings
     MOV [CLEAR_SCREEN], R1   ; Clear Screen
 
-    ; Set background to static.jpg (index 0)
-    MOV R1, 0
+    ; Set background to main_menu.png (index 1)
+    MOV R1, 1
     MOV [SET_BACKGROUND], R1
 
-    ; Set energy to 100 and update display
+    ; Set energy to 100
     MOV R0, 100
     MOV [CURRENT_ENERGY], R0
-    MOV [ENERGY_DISPLAYS], R0
 
-    ; Draw Probe, Spaceship, Asteroid for the first time
-    MOV R2, PROBE
-    CALL draw_entity
-    MOV R2, SPACESHIP
-    CALL draw_entity
-    MOV R2, ASTEROIDS
-    ADD R2, 2 ; Offset memory address to base address for first asteroid
-    CALL draw_entity
+    EI0
+    EI1
+    EI2
+    EI3
+    EI
 
 
-game_loop:
-    CALL keyboard_listner ; Listen for input
-    CALL event_handler    ; carry out keyboard commands
-    JMP game_loop
+start:
+    ;CALL main_menu - WIP
+
+
+    game_loop:
+        CALL keyboard_listner ; Listen for input
+
+        ; CALL energy_update
+        ; CALL asteroids_update
+        ; CALL probe_update
+
+        CALL event_handler    ; carry out keyboard commands
+
+        ; CALL check_game_over
+        JMP game_loop
+
+
+    ;main_menu:
+
 
 
 ; ***************************************************************************
@@ -509,3 +536,40 @@ check_pixel_address:
     POP R5
     POP R0
     RET
+
+
+asteroids_exception:
+    PUSH R0
+
+    MOV R0, 1
+    MOV [ASTEROIDS_UPDATE_FLAG], R0
+
+    POP R0
+    RFE
+
+probes_exception:
+    PUSH R0
+
+    MOV R0, 1
+    MOV [PROBES_UPDATE_FLAG], R0
+
+    POP R0
+    RFE
+
+energy_exception:
+    PUSH R0
+
+    MOV R0, 1
+    MOV [ENERGY_UPDATE_FLAG], R0
+
+    POP R0
+    RFE
+
+navpanel_exception:
+    PUSH R0
+
+    MOV R0, 1
+    MOV [NAVPANEL_UPDATE_FLAG], R0
+
+    POP R0
+    RFE
