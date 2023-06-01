@@ -168,8 +168,8 @@ initialize:
     MOV [DELETE_WARNING], R1 ; Clear warnings
     MOV [CLEAR_SCREEN], R1   ; Clear Screen
 
-    ; Set background to main_menu.png (index 1)
-    MOV R1, 1
+    ; Set background to main_menu.png (index 0)
+    MOV R1, 0
     MOV [SET_BACKGROUND], R1
 
     ; Set energy to 100
