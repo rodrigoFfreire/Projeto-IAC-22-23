@@ -107,7 +107,7 @@ Ex: Desenhar a entidade ```SPACE_SHIP```
 ### **RND_GENERATOR**
 Gera um número aleatório numa range N especificada [0;N] (N <= 15)
 - **Argumentos**
-  - R9 <- Range
+  - R9 <- Range (N)
 - **Retorna**
   - R10 -> Numero aleatorio entre [0;N]
 
