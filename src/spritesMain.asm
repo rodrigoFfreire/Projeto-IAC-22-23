@@ -117,11 +117,11 @@ PROBE:
     ; number of probes
     WORD 3
     ; state is current sub-sprite (0 means invisible), steps is number of movements
-    WORD 30, 23, 0, SPRITE_PROBE, 0, -1, 30, 23; (x, y, state, sprite, steps, direction (LEFT) )
+    WORD 26, 26, 0, SPRITE_PROBE, 0, -1, 26, 26; (x, y, state, sprite, steps, direction (LEFT) )
 
     WORD 32, 20, 0, SPRITE_PROBE, 0, 0, 32, 20; (x, y, state, sprite, steps, direction (UP) )
 
-    WORD 34, 23, 0, SPRITE_PROBE, 0, 1, 34, 23; (x, y, state, sprite, steps, direction (RIGHT) )
+    WORD 38, 26, 0, SPRITE_PROBE, 0, 1, 38, 26; (x, y, state, sprite, steps, direction (RIGHT) )
 
 SPACESHIP_PANEL:
     WORD 31, 27, 0, SPRITE_PANEL; (x, y, state, sprite)
