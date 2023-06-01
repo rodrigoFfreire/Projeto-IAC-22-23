@@ -107,9 +107,9 @@ Ex: Desenhar a entidade ```SPACE_SHIP```
 ### **RND_GENERATOR**
 Gera um número aleatório numa range N especificada [0;N] (N <= 15)
 - **Argumentos**
-  - R10 <- Range
+  - R9 <- Range
 - **Retorna**
-  - R9 -> Numero aleatorio entre [0;N]
+  - R10 -> Numero aleatorio entre [0;N]
 
 **Como usar?**
 Ex: Obter número aleatorio de 0 a 5, se for 3 chama uma rotina X
@@ -118,10 +118,10 @@ rotina_exemplo:
   PUSH R9
   PUSH R10
 
-  MOV R10, 5 ; para obter um numero entre 0 e 5
+  MOV R9, 5 ; para obter um numero entre 0 e 5
   CALL rnd_generator
   
-  CMP R9, 3
+  CMP R10, 3
   JNZ end
 
   CALL rotina_x
