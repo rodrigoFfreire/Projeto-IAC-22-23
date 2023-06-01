@@ -95,7 +95,7 @@ CURRENT_ENERGY:
 ; Entities
 ASTEROIDS:
     ;number of asteroids
-    WORD 8
+    WORD 4
 
     ;enemy 1
     WORD 0, 0, 1, ENEMY_SPRITES ; (x, y, visible, sprite)
@@ -109,17 +109,6 @@ ASTEROIDS:
     ;enemy 4
     WORD 0, 0, 1, ENEMY_SPRITES ; (x, y, visible, sprite)
 
-    ;friend 1
-    WORD 0, 0, 1, FRIEND_SPRITES ; (x, y, visible, sprite)
-
-    ;friend 2
-    WORD 0, 0, 1, FRIEND_SPRITES ; (x, y, visible, sprite)
-
-    ;friend 3
-    WORD 0, 0, 1, FRIEND_SPRITES ; (x, y, visible, sprite)
-    
-    ;friend 4
-    WORD 0, 0, 1, FRIEND_SPRITES ; (x, y, visible, sprite)
 
 SPACESHIP:
     WORD 23, 21, 0, SPRITE_SPACESHIP; (x, y, visible, sprite)
