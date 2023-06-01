@@ -37,8 +37,9 @@ SCREEN_ORIGIN      EQU 0                         ; Screen origin
 
 ; Layers
 LAYER_NAVPANEL     EQU 0
-LAYER_PROBES       EQU 1
-LAYER_ASTEROIDS    EQU 2
+LAYER_SPACESHIP    EQU 1
+LAYER_PROBES       EQU 2
+LAYER_ASTEROIDS    EQU 3
 
 ; colors
 BLACK              EQU 0F000H
@@ -374,46 +375,6 @@ event_handler:
         RET
 
 
-move_probe:
-    MOV R2, PROBE  ; Get PROBE entity base address
-    MOV R3, [R2]   ; current x
-    MOV R4, [R2+2] ; current y
-
-    MOV R5, SCREEN_ORIGIN
-    CMP R4, R5                ; check if probe at y=0 and needs to be moved home
-    JNZ end_move_probe        ; if not then update probe normally
-    
-    MOV R4, PROBE_START_Y     ; Set probe y to 0
-    ADD R4, 1                 ; account for last SUB
-    end_move_probe:
-        SUB R4, 1             ; Move y 1 up
-        CALL update_object    ; Updates the object postition and texture
-        JMP end_event_handler
-
-move_asteroid:
-    MOV R2, 0                 ; Select audio (index 0)
-    MOV [PLAY_AUDIO], R2      ; Play audio
-
-    MOV R2, ASTEROIDS         ; Get ASTEROIDS base address
-    ADD R2, 2                 ; (offset) get address of first asteroid
-    
-    MOV R3, [R2]              ; current x
-    MOV R4, [R2+2]            ; current y
-    MOV R5, SCREEN_HEIGHT 
-    CMP R4, R5                ; check if y = 31 and asteroid needs to be moved home
-    JNZ end_move_asteroid
-
-    MOV R3, ASTEROID_START_X
-    MOV R4, ASTEROID_START_Y    ; move asteroid home
-    SUB R3, 1
-    SUB R4, 1                   ; account for last ADDs
-    end_move_asteroid:
-        ADD R3, 1
-        ADD R4, 1               ; Move down diagonally
-        CALL update_object      ; Updates the object position and texture
-        JMP end_event_handler
-
-
 ; ***************************************************************************
 ; * UPDATE_OBJECT
 ; * Arguments
@@ -625,7 +586,7 @@ energy_decrement:
         RET
 
 
-
+; UPDATE PROBES - Missing colisions detection and some other shit
 update_probes:
     PUSH R0
     PUSH R1
@@ -640,7 +601,7 @@ update_probes:
 
     MOV R0, [PROBES]     ; Get number of probes
     MOV R2, PROBES
-    ADD R2, 4            ; Store address of first probe (offset by 4)
+    ADD R2, 2            ; Store address of first probe (offset by 4)
     MOV R5, LAYER_PROBES ; Set correct layer
     MOV [SET_LAYER], R5
 
@@ -690,6 +651,19 @@ update_probes:
         POP R1
         POP R0
         RET
+
+
+update_asteroids:
+
+    MOV R0, [ASTEROIDS_UPDATE_FLAG] ; Get update flag
+    CMP R0, 0
+    JZ end_update_probes         ; Skip update if flag is 0
+
+    MOV R0, [ASTEROIDS]     ; Get number of probes
+    MOV R2, PROBES
+    ADD R2, 2            ; Store address of first asteroid (offset by 2)
+    MOV R5, LAYER_ASTEROIDS ; Set correct layer
+    MOV [SET_LAYER], R5
 
 
 ; RANDOM NUMBER GEN
