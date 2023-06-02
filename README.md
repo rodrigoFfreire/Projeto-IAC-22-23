@@ -16,7 +16,7 @@
   - EI3 -> Update animação do painel
 
 - [X] ~~Menu Inicial  (David)~~
-- [ ] Rotinas de Atualizacao (asteroids, sondas, energia) (Rodas)
+- [ ] Rotinas de Atualizacao (asteroids, ~~sondas, energia~~) (Rodas)
 - [ ] Refazer texturas + Animações(painel, asteroides)  (Aleixo)
   - Animação do painel
   - Animação asteroide a explodir
