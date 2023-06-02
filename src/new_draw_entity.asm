@@ -33,15 +33,18 @@ draw_entity:
     MOV R0, [R2+6] ; Get base address of sprites
     
     MOV R1, [R0]   ; Sprite length
-    MUL R1, [R0+2] ; Multiply with sprite height to get sprite area
-    MUL R1, 2      ; Multiply by 2 for correct memory address
+    MOV R3, [R0+2]
+    MUL R1, R3     ; Multiply with sprite height to get sprite area
+    SHL R1, 1      ; Multiply by 2 for correct memory address
     ADD R1, 4      ; Add 4 to skip to next subsprite length (subsprite mapping offset)
     
-    MOV R0, R2     ; Get base address of entity
-    MUL R1, [R0+4] ; Finally multiply by subsprite index to get base address of current subsprite
+    MOV R3, [R2+4]
+    MUL R1, R3     ; Finally multiply by subsprite index to get final offset
+    ADD R1, R0     ; Add base adress of sprites with offset to get (base address of current subsprite)
 
+    MOV R0, R2     ; Get base address of entity
     MOV R2, [R1]   ; Length of sprite
-    MOV R3, [R1+2] ; Height of sprite  
+    MOV R3, [R1+2] ; Height of sprite    
 
     MOV R5, -1 ; Start at -1 to account for first ADD
     draw_from_table:
