@@ -28,6 +28,8 @@ SET_LINE           EQU MEDIA_COMMAND + 0AH
 SET_COLUMN         EQU MEDIA_COMMAND + 0CH
 SET_PIXEL   	   EQU MEDIA_COMMAND + 12H
 SET_BACKGROUND     EQU MEDIA_COMMAND + 42H
+SET_LAYER          EQU MEDIA_COMMAND + 04H
+DELETE_LAYER       EQU MEDIA_COMMAND
 CLEAR_SCREEN	   EQU MEDIA_COMMAND + 02H
 DELETE_WARNING     EQU MEDIA_COMMAND + 40H
 
@@ -38,8 +40,10 @@ SCREEN_ORIGIN      EQU 0                         ; Screen origin
 ; Layers
 LAYER_NAVPANEL     EQU 0
 LAYER_SPACESHIP    EQU 1
-LAYER_PROBES       EQU 2
-LAYER_ASTEROIDS    EQU 3
+LAYER_PROBE_RIGHT  EQU 2
+LAYER_PROBE_UP     EQU 3
+LAYER_PROBE_LEFT   EQU 4
+LAYER_ASTEROIDS    EQU 5
 
 ; colors
 BLACK              EQU 0F000H
@@ -472,13 +476,7 @@ draw_pixel:
     MOV [SET_LINE], R3   ; Set pixel Line
     MOV R2, [R7]         ; get color from address of pixel - R7 calculated by check_pixel_adress
     
-    MOV R3, [R0+4]       ; Get visibility flag
-    CMP R3, 1
-    JZ set_pixel         ; If one draw with that color
-    MOV R2, 0            ; If not erase pixel (draw with color 0000H)
-
-    set_pixel:
-        MOV [SET_PIXEL], R2 ; Draw pixel
+    MOV [SET_PIXEL], R2 ; Draw pixel
 
     POP R3
     POP R2
