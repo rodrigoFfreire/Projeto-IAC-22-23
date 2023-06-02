@@ -354,10 +354,7 @@ convert_to_key_aux:
 ; ***************************************************************************
 event_handler:
     PUSH R0
-    PUSH R2
-    PUSH R3
-    PUSH R4
-    PUSH R5
+    PUSH R1
 
     MOV R0, [EXECUTE_COMMAND]  ; Read execute command flag
     CMP R0, 1
@@ -365,26 +362,28 @@ event_handler:
 
     MOV R0, [LAST_PRESSED_KEY] ; Read last pressed key and following CMPs to determine the correct action
 
-    CMP R0, KEY_SHOOT_UP
+    MOV R1, KEY_SHOOT_UP
+    CMP R0, R1
     ;JZ shoot_up - WIP
 
-    CMP R0, KEY_SHOOT_LEFT
+    MOV R1, KEY_SHOOT_LEFT
+    CMP R0, R1
     ;JZ shoot_left - WIP
 
-    CMP R0, KEY_SHOOT_RIGHT
+    MOV R1, KEY_SHOOT_RIGHT
+    CMP R0, R1
     ;JZ shoot_right - WIP
 
-    CMP R0, KEY_PAUSE_GAME
+    MOV R1, KEY_PAUSE_GAME
+    CMP R0, R1
     ;JZ game_pause - WIP
 
-    CMP R0, KEY_STOP_GAME
+    MOV R1, KEY_STOP_GAME
+    CMP R0, R1
     ;JZ game_stop - WIP
 
     end_event_handler:
-        POP R5
-        POP R4
-        POP R3
-        POP R2
+        POP R1
         POP R0
         RET
 
