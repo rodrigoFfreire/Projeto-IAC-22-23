@@ -213,7 +213,7 @@ initialize:
 
 
 start:
-    ;CALL main_menu - WIP
+    CALL main_menu
 
 
     game_loop:
@@ -229,7 +229,20 @@ start:
         JMP game_loop
 
 
-    ;main_menu:
+    main_menu:
+        PUSH R0
+        PUSH R1
+
+        loop_menu:
+            CALL keyboard_listner
+            MOV R0, [LAST_PRESSED_KEY]
+            MOV R1, KEY_START_GAME
+            CMP R0, R1
+            JNZ loop_main_menu
+
+        POP R0
+        POP R1
+        RET
 
 
 
@@ -390,7 +403,7 @@ event_handler:
 ; * R1 - Used to modify objects visible flag 
 ; ***************************************************************************
 update_object:
-    MOV [DELETE_LAYER], R5  ; Update correct layer
+    MOV [DELETE_LAYER], R5  ; Deletes previous frame for layer stored in R5
 
 	MOV [R2], R3  ; UPDATE MEMORY OF OBJECT WITH NEW X POSITION
 	MOV [R2+2], R4  ; UPDATE MEMORY OF OBJECT WITH NEW Y POSITION
@@ -421,10 +434,21 @@ draw_entity:
     PUSH R5
     PUSH R6
     PUSH R7
-    MOV R0, R2     ; Entity base address
-    MOV R1, [R2+6] ; Sprite base address
+    MOV R0, [R2+6] ; Get base address of sprites
+    
+    MOV R1, [R0]   ; Sprite length
+    MOV R3, [R0+2]
+    MUL R1, R3     ; Multiply with sprite height to get sprite area
+    SHL R1, 1      ; Multiply by 2 for correct memory address
+    ADD R1, 4      ; Add 4 to skip to next subsprite length (subsprite mapping offset)
+    
+    MOV R3, [R2+4]
+    MUL R1, R3     ; Finally multiply by subsprite index to get final offset
+    ADD R1, R0     ; Add base adress of sprites with offset to get (base address of current subsprite)
+
+    MOV R0, R2     ; Get base address of entity
     MOV R2, [R1]   ; Length of sprite
-    MOV R3, [R1+2] ; Height of sprite
+    MOV R3, [R1+2] ; Height of sprite    
 
     MOV R5, -1 ; Start at -1 to account for first ADD
     draw_from_table:
@@ -655,4 +679,37 @@ rnd_generator:
     MOVB R10, [PIN_IN] ; Read bits from "air"
     SHR R10, 4         ; Put bits in low nibble
     MOD R10, R9       ; Mod by the argument passed by R10
+    RET
+
+
+hex_to_dec:
+    PUSH R1
+    PUSH R2
+    PUSH R9
+
+    MOV R1, 1000
+    MOV R2, 10
+
+    MOV R8, 0 ;inicialização do resultado decimal
+
+    loop_converter:
+        MOD R9, R1 
+        DIV R1, R2
+
+        CMP R1, 0 ; se for 0 termina o loop
+        JNZ end_hex_to_dec
+
+        MOV R3, R9
+        DIV R3, R1
+
+        SHL R8, 4 ;desloca para a esquerda para a entrada do novo digito
+        OR R8, R3 ;vai escrevendo o resultado
+
+        JMP loop_converter
+
+    end_hex_to_dec:
+    POP R9
+    POP R3
+    POP R2
+    POP R1
     RET
