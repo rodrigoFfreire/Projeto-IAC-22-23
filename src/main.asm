@@ -76,9 +76,6 @@ KEY_SHOOT_RIGHT    EQU 6
 PROBE_DIR_LEFT     EQU -1                      ; Direction LEFT
 PROBE_DIR_UP       EQU 0                       ; Direction UP
 PROBE_DIR_RIGHT    EQU 1                       ; Direction RIGHT
-PROBE_START_Y      EQU 26                      ; initial y of probe
-ASTEROID_START_X   EQU 0                       ; initial x of asteroid
-ASTEROID_START_Y   EQU 0                       ; initial y of asteroid
 
 
 ; ***************************************************************************
@@ -675,11 +672,11 @@ update_probes:
 ; Arguments:
 ;   - R9 : Range of numbers
 ; Returns R10 : Final Random number
-rnd_generator:
-    MOVB R10, [PIN_IN] ; Read bits from "air"
-    SHR R10, 4         ; Put bits in low nibble
-    MOD R10, R9       ; Mod by the argument passed by R10
-    RET
+; rnd_generator:
+;     MOVB R10, [PIN_IN] ; Read bits from "air"
+;     SHR R10, 4         ; Put bits in low nibble
+;     MOD R10, R9       ; Mod by the argument passed by R10
+;     RET
 
 
 hex_to_dec:
