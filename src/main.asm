@@ -21,19 +21,29 @@ PIN_IN             EQU 0E000H                   ; (PIN)
 ; Energy
 ENERGY_DISPLAYS    EQU 0A000H                   ; (POUT-1)
 
-; Screen
+; Screen Commands
 MEDIA_COMMAND	   EQU 6000H                    ; Media center commands
 
 SET_LINE           EQU MEDIA_COMMAND + 0AH
 SET_COLUMN         EQU MEDIA_COMMAND + 0CH
 SET_PIXEL   	   EQU MEDIA_COMMAND + 12H
 SET_BACKGROUND     EQU MEDIA_COMMAND + 42H
+SET_LAYER          EQU MEDIA_COMMAND + 04H
+DELETE_LAYER       EQU MEDIA_COMMAND
 CLEAR_SCREEN	   EQU MEDIA_COMMAND + 02H
 DELETE_WARNING     EQU MEDIA_COMMAND + 40H
 
 SCREEN_WIDTH       EQU 63                        ; Max screen width
 SCREEN_HEIGHT      EQU 31                        ; Max screen height
 SCREEN_ORIGIN      EQU 0                         ; Screen origin
+
+; Layers
+LAYER_NAVPANEL     EQU 0
+LAYER_SPACESHIP    EQU 1
+LAYER_PROBE_RIGHT  EQU 2
+LAYER_PROBE_UP     EQU 3
+LAYER_PROBE_LEFT   EQU 4
+LAYER_ASTEROIDS    EQU 5
 
 ; colors
 BLACK              EQU 0F000H
@@ -55,12 +65,17 @@ PLAY_VIDEO_LOOP    EQU MEDIA_COMMAND + 5CH
 
 
 ; Keys
-KEY_INCREMENT      EQU 6                       ; Increment Energy Display 
-KEY_DECREMENT      EQU 4                       ; Decrement Energy Display
-KEY_MOVE_PROBE     EQU 1                       ; Move probe up
-KEY_MOVE_ASTEROID  EQU 5                       ; Move asteroid in diagonal
+KEY_START_GAME     EQU 0CH
+KEY_PAUSE_GAME     EQU 0DH
+KEY_STOP_GAME      EQU 0EH
+KEY_SHOOT_UP       EQU 1
+KEY_SHOOT_LEFT     EQU 4
+KEY_SHOOT_RIGHT    EQU 6
 
 ; other constants
+PROBE_DIR_LEFT     EQU -1                      ; Direction LEFT
+PROBE_DIR_UP       EQU 0                       ; Direction UP
+PROBE_DIR_RIGHT    EQU 1                       ; Direction RIGHT
 PROBE_START_Y      EQU 26                      ; initial y of probe
 ASTEROID_START_X   EQU 0                       ; initial x of asteroid
 ASTEROID_START_Y   EQU 0                       ; initial y of asteroid
@@ -92,16 +107,26 @@ CURRENT_ENERGY:
 ; Entities
 ASTEROIDS:
     ;number of asteroids
-    WORD 1
+    WORD 8
 
     ;asteroid 1
-    WORD 0, 0, 1, ENEMY_SPRITES ; (x, y, visible, sprite)
+    WORD 0, 0, 1, ENEMY_SPRITES, 0, 0 ; (x, y, state, sprite, nothing just padding, direction)
+
+    ;...
+
+PROBES:
+    ; number of probes
+    WORD 3
+    ; state is current sub-sprite (0 means invisible), steps is number of movements
+    WORD X, Y, 0, SPRITE_PROBE, 0, -1, homeX, homeY; (x, y, state, sprite, steps, direction (LEFT) )
+
+    WORD X, Y, 0, SPRITE_PROBE, 0, 0, homeX, homeY; (x, y, state, sprite, steps, direction (UP) )
+
+    WORD X, Y, 0, SPRITE_PROBE, 0, 1, homeX, homeY; (x, y, state, sprite, steps, direction (RIGHT) )
 
 SPACESHIP:
-    WORD 27, 27, 1, SPRITE_SPACESHIP; (x, y, visible, sprite)
+    WORD 27, 27, 1, SPRITE_SPACESHIP; (x, y, state, sprite)
 
-PROBE:
-    WORD 32, 26, 1, SPRITE_PROBE; (x, y, visible, sprite)
 
 ;SPRITES
 SPRITE_SPACESHIP:
@@ -156,6 +181,10 @@ ENERGY_UPDATE_FLAG:
 NAVPANEL_UPDATE_FLAG:
     WORD 0
 
+; Other Flags
+GAME_OVER_FLAG:
+    WORD 0
+
 
 ; ***************************************************************************
 ; * CODE
@@ -190,9 +219,9 @@ start:
     game_loop:
         CALL keyboard_listner ; Listen for input
 
-        ; CALL energy_update
-        ; CALL asteroids_update
-        ; CALL probe_update
+        CALL update_energy
+        CALL update_probes
+        ;CALL update_asteroids
 
         CALL event_handler    ; carry out keyboard commands
 
@@ -325,17 +354,21 @@ event_handler:
     JNZ end_event_handler      ; If flag not on (1) then it means no command needs to be executed
 
     MOV R0, [LAST_PRESSED_KEY] ; Read last pressed key and following CMPs to determine the correct action
-    CMP R0, KEY_MOVE_PROBE
-    JZ move_probe              ; Event - Move probe
 
-    CMP R0, KEY_MOVE_ASTEROID
-    JZ move_asteroid           ; Event - Move Asteroid
+    CMP R0, KEY_SHOOT_UP
+    ;JZ shoot_up - WIP
 
-    CMP R0, KEY_DECREMENT
-    JZ decrement_energy        ; Event - Decrement energy
+    CMP R0, KEY_SHOOT_LEFT
+    ;JZ shoot_left - WIP
 
-    CMP R0, KEY_INCREMENT
-    JZ increment_energy        ; Event - Increment energy
+    CMP R0, KEY_SHOOT_RIGHT
+    ;JZ shoot_right - WIP
+
+    CMP R0, KEY_PAUSE_GAME
+    ;JZ game_pause - WIP
+
+    CMP R0, KEY_STOP_GAME
+    ;JZ game_stop - WIP
 
     end_event_handler:
         POP R5
@@ -346,93 +379,24 @@ event_handler:
         RET
 
 
-move_probe:
-    MOV R2, PROBE  ; Get PROBE entity base address
-    MOV R3, [R2]   ; current x
-    MOV R4, [R2+2] ; current y
-
-    MOV R5, SCREEN_ORIGIN
-    CMP R4, R5                ; check if probe at y=0 and needs to be moved home
-    JNZ end_move_probe        ; if not then update probe normally
-    
-    MOV R4, PROBE_START_Y     ; Set probe y to 0
-    ADD R4, 1                 ; account for last SUB
-    end_move_probe:
-        SUB R4, 1             ; Move y 1 up
-        CALL update_object    ; Updates the object postition and texture
-        JMP end_event_handler
-
-move_asteroid:
-    MOV R2, 0                 ; Select audio (index 0)
-    MOV [PLAY_AUDIO], R2      ; Play audio
-
-    MOV R2, ASTEROIDS         ; Get ASTEROIDS base address
-    ADD R2, 2                 ; (offset) get address of first asteroid
-    
-    MOV R3, [R2]              ; current x
-    MOV R4, [R2+2]            ; current y
-    MOV R5, SCREEN_HEIGHT 
-    CMP R4, R5                ; check if y = 31 and asteroid needs to be moved home
-    JNZ end_move_asteroid
-
-    MOV R3, ASTEROID_START_X
-    MOV R4, ASTEROID_START_Y    ; move asteroid home
-    SUB R3, 1
-    SUB R4, 1                   ; account for last ADDs
-    end_move_asteroid:
-        ADD R3, 1
-        ADD R4, 1               ; Move down diagonally
-        CALL update_object      ; Updates the object position and texture
-        JMP end_event_handler
-
-decrement_energy:
-    MOV R0, [CURRENT_ENERGY]    ; Get current energy
-    SUB R0, 1                   ; Decrease energy by 1
-    MOV [CURRENT_ENERGY], R0    ; Update energy in memory
-
-    MOV R0, [CURRENT_ENERGY]
-    MOV [ENERGY_DISPLAYS], R0   ; Update displays
-    JMP end_event_handler
-
-increment_energy:
-    MOV R0, [CURRENT_ENERGY]    ; Get current energy
-    ADD R0, 1                   ; Increase energy by 1
-    MOV [CURRENT_ENERGY], R0    ; Update energy in memory
-
-    MOV R0, [CURRENT_ENERGY]
-    MOV [ENERGY_DISPLAYS], R0   ; Update displays
-    JMP end_event_handler
-
-
 ; ***************************************************************************
 ; * UPDATE_OBJECT
 ; * Arguments
 ; *     - R2 -> Base address of entity/object
 ; *     - R3 -> New x coordinate
 ; *     - R4 -> New y coordinate
+; *     - R5 -> Layer ID
 ; * _________________________________________________________________________
 ; * R1 - Used to modify objects visible flag 
 ; ***************************************************************************
 update_object:
-	PUSH R1
-	
-	MOV R1, [R2+4] ; Get entity visible flag
-	CMP R1, 0
-	JZ return_update_object ; If object is invisible (flag=0) then dont render
-	
-    MOV R1, 0
-    MOV [R2+4], R1    ; Modify visible flag of entity to 0 (invisible)
-    CALL draw_entity  ; DRAW OBJECT INVISIBLE (DELETE PREVIOUS OBJECT)
+    MOV [DELETE_LAYER], R5  ; Update correct layer
 
 	MOV [R2], R3  ; UPDATE MEMORY OF OBJECT WITH NEW X POSITION
 	MOV [R2+2], R4  ; UPDATE MEMORY OF OBJECT WITH NEW Y POSITION
 
-    MOV R1, 1
-    MOV [R2+4], R1   ; AFTER UPDATING POSITION TURN OF VISIBILITY FLAG TO 1 SO IT BECOMES VISIBLE
     CALL draw_entity ; DRAW OBJECT IN NEW COORDINATES 
 
-	return_update_object:
-    POP R1
     RET
 
 
@@ -440,8 +404,6 @@ update_object:
 ; * DRAW ENTITY
 ; * Arguments
 ; *     - R2 -> Base address of entity/object
-; *     - R3 -> New x coordinate
-; *     - R4 -> New y coordinate
 ; * _________________________________________________________________________
 ; R0 - Entity/object base address
 ; R1 - Sprite base address
@@ -504,13 +466,7 @@ draw_pixel:
     MOV [SET_LINE], R3   ; Set pixel Line
     MOV R2, [R7]         ; get color from address of pixel - R7 calculated by check_pixel_adress
     
-    MOV R3, [R0+4]       ; Get visibility flag
-    CMP R3, 1
-    JZ set_pixel         ; If one draw with that color
-    MOV R2, 0            ; If not erase pixel (draw with color 0000H)
-
-    set_pixel:
-        MOV [SET_PIXEL], R2 ; Draw pixel
+    MOV [SET_PIXEL], R2 ; Draw pixel
 
     POP R3
     POP R2
@@ -539,7 +495,7 @@ check_pixel_address:
     POP R0
     RET
 
-
+; Exception Routines
 asteroids_exception:
     PUSH R0
 
@@ -577,12 +533,126 @@ navpanel_exception:
     RFE
 
 
-; RANDOM NUMBER GEN
+
+update_energy:
+    PUSH R0
+
+    MOV R0, [ENERGY_UPDATE_FLAG] ; Get energy_update flag
+    CMP R0, 0
+    JZ end_update_energy         ; If 0 means dont update
+
+    CALL energy_decrement        ; Update energy
+    MOV R0, 0
+    MOV [ENERGY_UPDATE_FLAG], R0 ; Reset update flag
+
+    end_update_energy:
+        POP R0
+        RET
+
+
+energy_decrement:
+    PUSH R8
+    PUSH R9
+
+    ; Get current energy, subtract 5 and update memory
+    MOV R9, [CURRENT_ENERGY]
+    SUB R9, 5
+    MOV [CURRENT_ENERGY], R9
+
+    ;CALL hex_to_dec
+    MOV [ENERGY_DISPLAYS], R8 ; Display energy (converted)
+
+    CMP R8, 0 ; Check energy is 0 (game over)
+    JNZ end_energy_decrement
+
+    MOV R8, 1
+    MOV [GAME_OVER_FLAG], R8 ; Enable game over flag
+
+    end_energy_decrement:
+        POP R9
+        POP R8
+        RET
+
+
+; UPDATE PROBES - Missing colisions detection and some other shit
+update_probes:
+    PUSH R0
+    PUSH R1
+    PUSH R2
+    PUSH R3
+    PUSH R4
+    PUSH R5
+    PUSH R6 ; offsets
+
+    MOV R6, 16                   ; Next probe offset
+    MOV R0, [PROBES_UPDATE_FLAG] ; Get update flag
+    CMP R0, 0
+    JZ end_update_probes         ; Skip update if flag is 0
+
+    MOV R0, [PROBES]     ; Get number of probes
+    MOV R2, PROBES
+    ADD R2, 2            ; Store address of first probe (offset by 2)
+    MOV R5, R0
+    ADD R5, 1            ; 3 probes -> layers (2, 3, 4) so add 1 to account for that
+
+    update_loop:
+        CMP R0, 0
+        JZ end_update_loop ; End loop when all probes were checked
+
+        MOV R1, [R2+8] ; Get amount of steps
+        CMP R1, -1     ; If -1 (not active) then skip update
+        JZ next_iter
+
+        MOV R3, 12
+        CMP R1, R3     ; If 12 (12 steps were taken) then move home
+        JZ move_probe_home
+
+        MOV R3, [R2]    ; Current X
+        MOV R4, [R2+10] ; Direction (-1, 0, 1 -> left, up, right)
+        ADD R3, R4
+        MOV R4, [R2+2]  ; Current Y
+        SUB R4, 1       ; Move 1 up
+        JMP move_probe  ; After gathering new coordinates goto move_probe
+
+        move_probe_home:
+            MOV R3, [R2+12] ; Get homeX
+            MOV R4, [R2+14] ; Get homeY
+            MOV R1, -1      ; Set to not active
+
+        move_probe:
+            ADD R1, 1           ; Steps++
+            MOV [R2+8], R1      ; Update steps in memory 
+            MOV [SET_LAYER], R5 ; Get correct layer
+            CALL update_object
+            SUB R5, 1       ; Next probe layer
+
+        next_iter:
+            ADD R2, R6 ; Offset by 16 to get address of next probe
+            SUB R0, 1  ; Decrement iterator (number of probes)
+            JMP update_loop
+
+
+    end_update_loop:
+        MOV R0, 0
+        MOV [PROBES_UPDATE_FLAG], R0
+
+    end_update_probes:
+        POP R6
+        POP R5
+        POP R4
+        POP R3
+        POP R2
+        POP R1
+        POP R0
+        RET
+
+
+; RANDOM NUMBER GEN (BROKEN NEED TO FIX)
 ; Arguments:
-;   - R10 : Range of numbers
-; Returns R9 : Final Random number
+;   - R9 : Range of numbers
+; Returns R10 : Final Random number
 rnd_generator:
-    MOVB R9, [PIN_IN] ; Read bits from "air"
-    SHR R9, 4         ; Put bits in low nibble
-    MOD R9, R10       ; Mod by the argument passed by R10
+    MOVB R10, [PIN_IN] ; Read bits from "air"
+    SHR R10, 4         ; Put bits in low nibble
+    MOD R10, R9       ; Mod by the argument passed by R10
     RET
