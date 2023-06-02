@@ -1586,7 +1586,7 @@
       "nWordParts" : 2,
       "endianness" : "Big-Endian",
       "addressNBits" : 12,
-      "numberOfPixelScreens" : 1
+      "numberOfPixelScreens" : 6
     },
     "addressable control" : {
       "className" : "ModuleExtensionMediaCenter",
