@@ -15,17 +15,17 @@
   - EI2 -> Descrescimo da energia
   - EI3 -> Update animação do painel
 
-- [ ] Menu Inicial  (David)
-- [ ] Rotinas de Atualizacao (asteroids, sondas, energia, painel) (Rodas)
+- [X] ~~Menu Inicial  (David)~~
+- [ ] Rotinas de Atualizacao (asteroids, sondas, energia) (Rodas)
 - [ ] Refazer texturas + Animações(painel, asteroides)  (Aleixo)
   - Animação do painel
   - Animação asteroide a explodir
   - Animação asteroide amigavel
+  - Rotina `update_energy`
 - [ ] Criar tabela de objetos (3 sondas, 4 asteroides)  (Aleixo)
 - [X] ~~Random Number Generator   (Rodas)~~
-- [ ] Sonda desaparece apos 12 movimentos
 - [ ] Colisões
-- [ ] Conversão Hexa para Decimal  (David)
+- [X] ~~Conversão Hexa para Decimal  (David)~~
 - [ ] Menus + Sons + backgrounds (Verificar condicoes: sem energia, colisao com a nave, terminar pela tecla, pausa)
   
 - [ ] Controlo (para tratar das teclas de começar, suspender/continuar e terminar o jogo).
