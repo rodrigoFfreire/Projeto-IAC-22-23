@@ -594,16 +594,18 @@ update_probes:
     PUSH R3
     PUSH R4
     PUSH R5
+    PUSH R6 ; offsets
 
+    MOV R6, 16                   ; Next probe offset
     MOV R0, [PROBES_UPDATE_FLAG] ; Get update flag
     CMP R0, 0
     JZ end_update_probes         ; Skip update if flag is 0
 
     MOV R0, [PROBES]     ; Get number of probes
     MOV R2, PROBES
-    ADD R2, 2            ; Store address of first probe (offset by 4)
-    MOV R5, LAYER_PROBES ; Set correct layer
-    MOV [SET_LAYER], R5
+    ADD R2, 2            ; Store address of first probe (offset by 2)
+    MOV R5, R0
+    ADD R5, 1            ; 3 probes -> layers (2, 3, 4) so add 1 to account for that
 
     update_loop:
         CMP R0, 0
@@ -625,16 +627,19 @@ update_probes:
         JMP move_probe  ; After gathering new coordinates goto move_probe
 
         move_probe_home:
-            MOV R3, [R2+14] ; Get homeX
-            MOV R4, [R2+16] ; Get homeY
+            MOV R3, [R2+12] ; Get homeX
+            MOV R4, [R2+14] ; Get homeY
+            MOV R1, -1      ; Set to not active
 
         move_probe:
-            ADD R1, 1       ; Steps++
-            MOV [R2+8], R1  ; Update steps in memory
+            ADD R1, 1           ; Steps++
+            MOV [R2+8], R1      ; Update steps in memory 
+            MOV [SET_LAYER], R5 ; Get correct layer
             CALL update_object
+            SUB R5, 1       ; Next probe layer
 
         next_iter:
-            ADD R2, 16 ; Offset by 16 to get address of next probe
+            ADD R2, R6 ; Offset by 16 to get address of next probe
             SUB R0, 1  ; Decrement iterator (number of probes)
             JMP update_loop
 
@@ -644,6 +649,7 @@ update_probes:
         MOV [PROBES_UPDATE_FLAG], R0
 
     end_update_probes:
+        POP R6
         POP R5
         POP R4
         POP R3
@@ -653,20 +659,7 @@ update_probes:
         RET
 
 
-update_asteroids:
-
-    MOV R0, [ASTEROIDS_UPDATE_FLAG] ; Get update flag
-    CMP R0, 0
-    JZ end_update_probes         ; Skip update if flag is 0
-
-    MOV R0, [ASTEROIDS]     ; Get number of probes
-    MOV R2, PROBES
-    ADD R2, 2            ; Store address of first asteroid (offset by 2)
-    MOV R5, LAYER_ASTEROIDS ; Set correct layer
-    MOV [SET_LAYER], R5
-
-
-; RANDOM NUMBER GEN
+; RANDOM NUMBER GEN (BROKEN NEED TO FIX)
 ; Arguments:
 ;   - R9 : Range of numbers
 ; Returns R10 : Final Random number
