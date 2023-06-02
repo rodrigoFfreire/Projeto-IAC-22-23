@@ -212,6 +212,16 @@ initialize:
 start:
     CALL main_menu
 
+    MOV R1, 0
+    MOV [PLAY_VIDEO_LOOP], R1  ; Set video loop
+
+    MOV R5, LAYER_SPACESHIP
+    MOV [SET_LAYER], R5        ; Draw spaceship in correct layer
+    MOV R2, SPACESHIP
+    CALL draw_entity
+
+    MOV R1, 100H
+    MOV [ENERGY_DISPLAYS], R1 ; Update display first time
 
     game_loop:
         CALL keyboard_listner ; Listen for input
@@ -582,11 +592,11 @@ energy_decrement:
     ;CALL hex_to_dec
     MOV [ENERGY_DISPLAYS], R8 ; Display energy (converted)
 
-    CMP R8, 0 ; Check energy is 0 (game over)
-    JNZ end_energy_decrement
+    ; CMP R8, 0 ; Check energy is 0 (game over)
+    ; JNZ end_energy_decrement
 
-    MOV R8, 1
-    MOV [GAME_OVER_FLAG], R8 ; Enable game over flag
+    ; MOV R8, 1
+    ; MOV [GAME_OVER_FLAG], R8 ; Enable game over flag
 
     end_energy_decrement:
         POP R9
@@ -681,6 +691,7 @@ update_probes:
 hex_to_dec:
     PUSH R1
     PUSH R2
+    PUSH R3
     PUSH R9
 
     MOV R1, 1000
@@ -693,7 +704,7 @@ hex_to_dec:
         DIV R1, R2
 
         CMP R1, 0 ; se for 0 termina o loop
-        JNZ end_hex_to_dec
+        JZ end_hex_to_dec
 
         MOV R3, R9
         DIV R3, R1
