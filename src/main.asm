@@ -390,12 +390,6 @@ event_handler:
 ; * R1 - Used to modify objects visible flag 
 ; ***************************************************************************
 update_object:
-	PUSH R1
-	
-	MOV R1, [R2+4] ; Get entity visible flag
-	CMP R1, 0
-	JZ return_update_object ; If object is invisible (flag=0) then dont render
-	
     MOV [DELETE_LAYER], R5  ; Update correct layer
 
 	MOV [R2], R3  ; UPDATE MEMORY OF OBJECT WITH NEW X POSITION
@@ -403,8 +397,6 @@ update_object:
 
     CALL draw_entity ; DRAW OBJECT IN NEW COORDINATES 
 
-	return_update_object:
-    POP R1
     RET
 
 
@@ -412,8 +404,6 @@ update_object:
 ; * DRAW ENTITY
 ; * Arguments
 ; *     - R2 -> Base address of entity/object
-; *     - R3 -> New x coordinate
-; *     - R4 -> New y coordinate
 ; * _________________________________________________________________________
 ; R0 - Entity/object base address
 ; R1 - Sprite base address
