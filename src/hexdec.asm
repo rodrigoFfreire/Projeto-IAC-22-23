@@ -11,10 +11,10 @@ rot_hexa_dec:
     MOV R8, 0 ;inicialização do resultado decimal
 
     loop_hexa_dec:
-        MOD R10, R1
+        MOD R10, R1 
         DIV R1, R2
 
-        CMP R1, 0
+        CMP R1, 0 ; se for 0 termina o loop
         JNZ ret_hexa_dec
 
         MOV R3, R10
