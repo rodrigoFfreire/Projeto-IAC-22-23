@@ -742,9 +742,9 @@ update_probes:
 
 
 
-Arguments:
-  - R9 : Range of numbers
-Returns R10 : Final Random number
+;Arguments:
+;  - R9 : Range of numbers
+;Returns R10 : Final Random number
 rnd_generator:
     MOV R10, PIN_IN
     MOVB R10, [R10]      ; Read bits from "air" (PIN)
