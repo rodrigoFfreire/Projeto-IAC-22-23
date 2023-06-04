@@ -741,15 +741,16 @@ update_probes:
         RET
 
 
-; RANDOM NUMBER GEN (BROKEN NEED TO FIX)
-; Arguments:
-;   - R9 : Range of numbers
-; Returns R10 : Final Random number
-; rnd_generator:
-;     MOVB R10, [PIN_IN] ; Read bits from "air"
-;     SHR R10, 4         ; Put bits in low nibble
-;     MOD R10, R9       ; Mod by the argument passed by R10
-;     RET
+
+Arguments:
+  - R9 : Range of numbers
+Returns R10 : Final Random number
+rnd_generator:
+    MOV R10, PIN_IN
+    MOVB R10, [R10]      ; Read bits from "air" (PIN)
+    SHR R10, 4           ; Put bits in low nibble
+    MOD R10, R9          ; Mod by the argument passed by R9
+    RET
 
 
 hex_to_dec:
