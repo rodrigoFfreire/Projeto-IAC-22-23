@@ -76,7 +76,7 @@ KEY_SHOOT_RIGHT    EQU 6
 PROBE_DIR_LEFT     EQU -1                      ; Direction LEFT
 PROBE_DIR_UP       EQU 0                       ; Direction UP
 PROBE_DIR_RIGHT    EQU 1                       ; Direction RIGHT
-
+PROBE_MAX_STEPS    EQU 11                      ; MaxSteps - 1
 
 ; ***************************************************************************
 ; * DATA
@@ -365,6 +365,9 @@ convert_to_key_aux:
 event_handler:
     PUSH R0
     PUSH R1
+    PUSH R2
+    PUSH R3
+    PUSH R4
 
     MOV R0, [EXECUTE_COMMAND]  ; Read execute command flag
     CMP R0, 1
@@ -374,15 +377,15 @@ event_handler:
 
     MOV R1, KEY_SHOOT_UP
     CMP R0, R1
-    ;JZ shoot_up - WIP
+    JZ shoot_up
 
     MOV R1, KEY_SHOOT_LEFT
     CMP R0, R1
-    ;JZ shoot_left - WIP
+    JZ shoot_left
 
     MOV R1, KEY_SHOOT_RIGHT
     CMP R0, R1
-    ;JZ shoot_right - WIP
+    JZ shoot_right
 
     MOV R1, KEY_PAUSE_GAME
     CMP R0, R1
@@ -393,9 +396,59 @@ event_handler:
     ;JZ game_stop - WIP
 
     end_event_handler:
+        POP R4
+        POP R3
+        POP R2
         POP R1
         POP R0
         RET
+
+
+    shoot_up:
+        MOV R2, 18     ; Offset for middle probe
+        MOV R3, PROBES ; Get probes base address
+        ADD R3, R2     ; Get middle probe base address
+
+        MOV R4, LAYER_PROBE_UP
+        MOV [SET_LAYER], R4
+
+        JMP ready_up_probe
+
+    shoot_left:
+        MOV R2, 2     ; Offset for left probe
+        MOV R3, PROBES ; Get probes base address
+        ADD R3, R2     ; Get middle probe base address
+
+        MOV R4, LAYER_PROBE_LEFT
+        MOV [SET_LAYER], R4
+
+        JMP ready_up_probe
+
+    shoot_right:
+        MOV R2, 34     ; Offset for right probe
+        MOV R3, PROBES ; Get probes base address
+        ADD R3, R2     ; Get middle probe base address
+
+        MOV R4, LAYER_PROBE_RIGHT
+        MOV [SET_LAYER], R4
+
+        JMP ready_up_probe
+
+    ready_up_probe:
+        MOV R2, [R3+8]
+        CMP R2, 0
+        JGE end_event_handler ; If probe already exists (steps != -1) dont do nothing
+
+        MOV R2, 0
+        MOV [R3+8], R2         ; Set steps flag to 0 (ready with 0 steps taken)
+        MOV [R3+4], R2         ; Set sprite index to 0 (visible)
+
+        MOV R2, R3             ; Set base address to R2 so draw_entity can read it
+        CALL draw_entity
+
+        CALL energy_decrement ; Probe spends energy
+        
+        JMP end_event_handler
 
 
 ; ***************************************************************************
@@ -409,14 +462,22 @@ event_handler:
 ; * R1 - Used to modify objects visible flag 
 ; ***************************************************************************
 update_object:
+    PUSH R0
+
     MOV [DELETE_LAYER], R5  ; Deletes previous frame for layer stored in R5
 
 	MOV [R2], R3  ; UPDATE MEMORY OF OBJECT WITH NEW X POSITION
 	MOV [R2+2], R4  ; UPDATE MEMORY OF OBJECT WITH NEW Y POSITION
 
-    CALL draw_entity ; DRAW OBJECT IN NEW COORDINATES 
+    MOV R0, [R2+4]
+    CMP R0, -1  ; Check if object is invisible
+    JZ end_update_energy
 
-    RET
+    CALL draw_entity ; DRAW OBJECT IN NEW COORDINATES
+
+    end_update_object:
+        POP R0
+        RET
 
 
 ; ***************************************************************************
@@ -589,7 +650,7 @@ energy_decrement:
     SUB R9, 5
     MOV [CURRENT_ENERGY], R9
 
-    ;CALL hex_to_dec
+    CALL hex_to_dec
     MOV [ENERGY_DISPLAYS], R8 ; Display energy (converted)
 
     ; CMP R8, 0 ; Check energy is 0 (game over)
@@ -633,7 +694,7 @@ update_probes:
         CMP R1, -1     ; If -1 (not active) then skip update
         JZ next_iter
 
-        MOV R3, 12
+        MOV R3, PROBE_MAX_STEPS
         CMP R1, R3     ; If 12 (12 steps were taken) then move home
         JZ move_probe_home
 
@@ -647,16 +708,19 @@ update_probes:
         move_probe_home:
             MOV R3, [R2+12] ; Get homeX
             MOV R4, [R2+14] ; Get homeY
-            MOV R1, -1      ; Set to not active
+
+            MOV R1, -1
+            MOV [R2+4], R1  ; Set sprite index to -1 (invisible)
+            MOV R1, -2      ; Set to not active (account for next add -2 + 1 = -1)
 
         move_probe:
             ADD R1, 1           ; Steps++
             MOV [R2+8], R1      ; Update steps in memory 
             MOV [SET_LAYER], R5 ; Get correct layer
             CALL update_object
-            SUB R5, 1       ; Next probe layer
 
         next_iter:
+            SUB R5, 1       ; Next probe layer
             ADD R2, R6 ; Offset by 16 to get address of next probe
             SUB R0, 1  ; Decrement iterator (number of probes)
             JMP update_loop
