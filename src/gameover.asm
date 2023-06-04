@@ -1,4 +1,5 @@
 
+STOP_AUDIO EQU MEDIA_COMMAND + 66H
 
 rot_game_over:
     PUSH R0
@@ -25,8 +26,11 @@ rot_game_over:
         CMP R0, R1
         JNZ loop_game_over
 
+    ;pausa o audio
+    MOV R0, 1
+    MOV [STOP_AUDIO], R0
 
-
+    ;retoma o background inicial
     MOV R0, 0
     MOV [SET_BACKGROUND], R0
 
