@@ -659,6 +659,9 @@ energy_decrement:
     MOV R8, 1
     MOV [GAME_OVER_FLAG], R8 ; Enable game over flag
 
+    MOV R8, 3               ; Set background to no_energy.png (index 3)
+    MOV [SET_BACKGROUND], R8
+
     end_energy_decrement:
         POP R9
         POP R8
