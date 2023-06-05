@@ -340,5 +340,6 @@ update_panel:
     CALL draw_entity
 
     end_update_panel:
-    POP R2 
-    POP R0
+        POP R2 
+        POP R0
+        RET 
