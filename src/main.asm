@@ -653,11 +653,11 @@ energy_decrement:
     CALL hex_to_dec
     MOV [ENERGY_DISPLAYS], R8 ; Display energy (converted)
 
-    ; CMP R8, 0 ; Check energy is 0 (game over)
-    ; JNZ end_energy_decrement
+    CMP R8, 0 ; Check energy is 0 (game over)
+    JNZ end_energy_decrement
 
-    ; MOV R8, 1
-    ; MOV [GAME_OVER_FLAG], R8 ; Enable game over flag
+    MOV R8, 1
+    MOV [GAME_OVER_FLAG], R8 ; Enable game over flag
 
     end_energy_decrement:
         POP R9
