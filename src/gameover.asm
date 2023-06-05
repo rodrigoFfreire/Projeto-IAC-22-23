@@ -27,12 +27,12 @@ rot_game_over:
         JNZ loop_game_over
 
     ;pausa o audio
-    MOV R0, 1
+    MOV R0, 5
     MOV [STOP_AUDIO], R0
 
     ;retoma o background inicial
     MOV R0, 0
-    MOV [SET_BACKGROUND], R0
+    MOV [PLA_VIDEO_LOOP], R0
 
     ;flag do game over a 0
     MOV R0, 0
