@@ -362,6 +362,7 @@ start:
         CALL update_energy
         CALL update_probes
         CALL update_asteroids
+        CALL update_panel
 
         CALL event_handler    ; carry out keyboard commands
 
@@ -1023,6 +1024,38 @@ type_gen:
         MOV [R2+6], R0          ; Apply changes in object
         POP R0
         RET
+
+update_panel:
+    PUSH R0
+    PUSH R2
+
+    MOV R0, [NAVPANEL_UPDATE_FLAG] 
+    CMP R0, 1
+    JNZ end_update_panel
+
+    MOV R2, SPACESHIP_PANEL
+    MOV R0, [R2 + 4]
+    CMP R0, 5
+    JLT index_increment
+    MOV R0, -1
+
+    index_increment:
+        ADD R0, 1
+    
+    MOV [R2 + 4], R0
+
+    MOV R0, LAYER_NAVPANEL
+    MOV [SET_LAYER], R0
+    CALL draw_entity
+
+    MOV R0, 0
+    MOV [NAVPANEL_UPDATE_FLAG], R0
+
+    end_update_panel:
+        POP R2 
+        POP R0
+        RET
+
 
 
 hex_to_dec:
