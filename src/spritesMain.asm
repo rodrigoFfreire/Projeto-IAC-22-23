@@ -121,7 +121,7 @@ PROBE:
 
     WORD 32, 20, 0, SPRITE_PROBE, 0, 0, 32, 20; (x, y, state, sprite, steps, direction (UP) )
 
-    WORD 38, 26, 0, SPRITE_PROBE, 0, 1, 38, 26; (x, y, state, sprite, steps, direction (RIGHT) )
+    WORD 38, 25, 0, SPRITE_PROBE, 0, 1, 38, 26; (x, y, state, sprite, steps, direction (RIGHT) )
 
 SPACESHIP_PANEL:
     WORD 31, 27, 0, SPRITE_PANEL; (x, y, state, sprite)
@@ -184,15 +184,15 @@ ENEMY_SPRITES:
     WORD DARKRED, 0, 0, 0, DARKRED
 
     ;desctruction sprite
-    WORD 7 ; length
+    WORD 5 ; length
     WORD 7 ; height 
-    WORD 0, 0, 0, 0, 0, LIGHTBLUE, 0
-    WORD 0, 0, 0, 0, LIGHTBLUE, BLUE, DARKBLUE
-    WORD 0, LIGHTBLUE, 0, 0, 0, DARKBLUE, 0
-    WORD LIGHTBLUE, BLUE, DARKBLUE, 0, 0, 0, 0
-    WORD 0, DARKBLUE, 0, 0, LIGHTBLUE, 0, 0
-    WORD 0, 0, 0, LIGHTBLUE, BLUE, DARKBLUE, 0
-    WORD 0, 0, 0, 0, DARKBLUE, 0, 0
+    WORD 0, LIGHTBLUE, 0, 0, 0,
+    WORD LIGHTBLUE, BLUE, DARKBLUE, 0, 0
+    WORD 0, DARKBLUE, 0, 0, 0
+    WORD 0, 0, 0, 0, 0
+    WORD 0, 0, 0, LIGHTBLUE, 0
+    WORD 0, 0, LIGHTBLUE, BLUE, DARKBLUE
+    WORD 0, 0, 0, DARKBLUE, 0
 
 FRIEND_SPRITES:
     ;initial sprite
