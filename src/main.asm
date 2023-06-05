@@ -43,23 +43,33 @@ LAYER_SPACESHIP    EQU 1
 LAYER_PROBE_RIGHT  EQU 2
 LAYER_PROBE_UP     EQU 3
 LAYER_PROBE_LEFT   EQU 4
-LAYER_ASTEROIDS    EQU 5
+LAYER_ASTEROID_1   EQU 5
+LAYER_ASTEROID_2   EQU 6
+LAYER_ASTEROID_3   EQU 7
+LAYER_ASTEROID_4   EQU 8
 
-; colors
+
+; Colors
 BLACK              EQU 0F000H
-GREY               EQU 0F888H
-RED                EQU 0FF00H
-DARKRED            EQU 0FE00H
-GREEN              EQU 0F0F0H	
-DARKGREEN          EQU 0F0A0H	
-BROWN              EQU 0FA52H
-BLUE               EQU 0F06FH
-CYAN               EQU 0F0FFH
+LIGHTGREY          EQU 0F888H
+GREY               EQU 04888H
+SALMON             EQU 08F10H
+MAGENTA            EQU 0D933H
+DARKRED            EQU 0F900H
+NEONRED            EQU 0FF00H
+NEONGREEN          EQU 0F0F0H	
+DARKGREEN          EQU 0F070H	
+DARKBLUE           EQU 0F04FH
+LIGHTBLUE          EQU 0607FH
+BLUE               EQU 0903FH
+CYAN               EQU 0F1FFH
+NEONPINK           EQU 0FF0FH
+ORANGE             EQU 0FD60H 
 WHITE              EQU 0FFFFH
-YELLOW             EQU 0FFF0H
-DARKYELLOW         EQU 0FFA3H
+NEONYELLOW         EQU 0FFF0H
+YELLOW             EQU 0FEE0H
 
-; Audio/Video
+
 PLAY_AUDIO         EQU MEDIA_COMMAND + 5AH
 PLAY_VIDEO_LOOP    EQU MEDIA_COMMAND + 5CH
 
@@ -73,10 +83,12 @@ KEY_SHOOT_LEFT     EQU 4
 KEY_SHOOT_RIGHT    EQU 6
 
 ; other constants
-PROBE_DIR_LEFT     EQU -1                      ; Direction LEFT
-PROBE_DIR_UP       EQU 0                       ; Direction UP
-PROBE_DIR_RIGHT    EQU 1                       ; Direction RIGHT
+DIR_LEFT           EQU -1                      ; Direction LEFT
+DIR_UP             EQU 0                       ; Direction UP
+DIR_RIGHT          EQU 1                       ; Direction RIGHT
 PROBE_MAX_STEPS    EQU 11                      ; MaxSteps - 1
+ASTEROID_MAX_STEPS EQU 32
+
 
 ; ***************************************************************************
 ; * DATA
@@ -104,59 +116,180 @@ CURRENT_ENERGY:
 ; Entities
 ASTEROIDS:
     ;number of asteroids
-    WORD 8
+    WORD 4
 
-    ;asteroid 1
-    WORD 0, 0, 1, ENEMY_SPRITES, 0, 0 ; (x, y, state, sprite, nothing just padding, direction)
+    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0 ; (x, y, state, sprite, direction)
 
-    ;...
+    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0 ; (x, y, state, sprite, direction)
+
+    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0 ; (x, y, state, sprite, direction)
+
+    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0 ; (x, y, state, sprite, direction)
+
+
+SPACESHIP:
+    WORD 23, 21, 0, SPRITE_SPACESHIP; (x, y, state, sprite)
 
 PROBES:
     ; number of probes
     WORD 3
-    ; state is current sub-sprite (0 means invisible), steps is number of movements
-    WORD X, Y, 0, SPRITE_PROBE, 0, -1, homeX, homeY; (x, y, state, sprite, steps, direction (LEFT) )
+    ; state is current sub-sprite, steps is number of movements
+    WORD 26, 26, 0, SPRITE_PROBE, -1, -1, 26, 26; (x, y, state, sprite, steps, direction (LEFT) )
 
-    WORD X, Y, 0, SPRITE_PROBE, 0, 0, homeX, homeY; (x, y, state, sprite, steps, direction (UP) )
+    WORD 32, 20, 0, SPRITE_PROBE, -1, 0, 32, 20; (x, y, state, sprite, steps, direction (UP) )
 
-    WORD X, Y, 0, SPRITE_PROBE, 0, 1, homeX, homeY; (x, y, state, sprite, steps, direction (RIGHT) )
+    WORD 38, 26, 0, SPRITE_PROBE, -1, 1, 38, 26; (x, y, state, sprite, steps, direction (RIGHT) )
 
-SPACESHIP:
-    WORD 27, 27, 1, SPRITE_SPACESHIP; (x, y, state, sprite)
-
+SPACESHIP_PANEL:
+    WORD 31, 27, 0, SPRITE_PANEL; (x, y, state, sprite)
 
 ;SPRITES
 SPRITE_SPACESHIP:
-    WORD 11 ; length
-    WORD 5  ; height
-	WORD 0, 0, BROWN, BROWN, BROWN, BROWN, BROWN, BROWN, BROWN, 0, 0
-	WORD 0, BROWN, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BROWN, 0
-	WORD BROWN, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BROWN 
-    WORD BROWN, YELLOW, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, YELLOW, BROWN 
-    WORD BROWN, YELLOW, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, YELLOW, BROWN
+    WORD 19 ; length
+    WORD 11 ; height
+
+    WORD 0, 0, 0, 0, 0, 0, 0, 0, 0, LIGHTGREY, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    WORD 0, 0, 0, 0, 0, 0, 0, 0, LIGHTGREY, LIGHTGREY, LIGHTGREY, 0, 0, 0, 0, 0, 0, 0, 0
+    WORD 0, 0, 0, 0, 0, 0, 0, 0, LIGHTGREY, GREY, LIGHTGREY, 0, 0, 0, 0, 0, 0, 0, 0
+    WORD 0, 0, 0, 0, 0, 0, ORANGE, LIGHTGREY, GREY, BLACK, GREY, LIGHTGREY, ORANGE, 0, 0, 0, 0, 0, 0
+    WORD 0, 0, 0, 0, ORANGE, ORANGE, LIGHTGREY, GREY, BLACK, BLACK, BLACK, GREY, LIGHTGREY, ORANGE, ORANGE, 0, 0, 0, 0
+    WORD 0, 0, 0, 0, ORANGE, ORANGE, LIGHTGREY, GREY, GREY, GREY, GREY, GREY, LIGHTGREY, ORANGE, ORANGE, 0, 0, 0, 0
+    WORD GREY, GREY, ORANGE, ORANGE, ORANGE, LIGHTGREY, GREY, GREY, 0, 0, 0, GREY, GREY, LIGHTGREY, ORANGE, ORANGE, ORANGE, GREY, GREY
+    WORD 0, GREY, ORANGE, ORANGE, ORANGE, LIGHTGREY, GREY, GREY, 0, 0, 0, GREY, GREY, LIGHTGREY, ORANGE, ORANGE, ORANGE, GREY, 0
+    WORD 0, 0, GREY, ORANGE, ORANGE, LIGHTGREY, LIGHTGREY, GREY, 0, 0, 0, GREY, LIGHTGREY, LIGHTGREY, ORANGE, ORANGE, GREY, 0, 0
+    WORD 0, 0, 0, GREY, 0, 0, LIGHTGREY, GREY, GREY, GREY, GREY, GREY, LIGHTGREY, 0, 0, GREY, 0, 0, 0
+    WORD 0, 0, 0, 0, 0, 0, 0, LIGHTGREY, LIGHTGREY, LIGHTGREY, LIGHTGREY, LIGHTGREY, 0, 0, 0, 0, 0, 0, 0
+    
 
 SPRITE_PROBE:
     WORD 1 ; length
     WORD 1 ; height
-    WORD RED
+    WORD NEONPINK ; color
 
 ENEMY_SPRITES:
+    ;sprite #0
     WORD 5 ; length
-    WORD 5 ; height  
-    WORD 0, BLACK, BLACK, BLACK, 0
-    WORD BLACK, GREY, GREY, GREY, BLACK
-    WORD BLACK, GREY, 0, GREY, BLACK
-    WORD BLACK, GREY, GREY, GREY, BLACK
-    WORD 0, BLACK, BLACK, BLACK, 0
+    WORD 7 ; height 
+    WORD SALMON, 0, 0, 0, SALMON
+    WORD 0, SALMON, 0, SALMON, 0
+    WORD SALMON, SALMON, SALMON, SALMON, SALMON
+    WORD SALMON, 0, SALMON, 0, SALMON
+    WORD DARKRED, 0, DARKRED, 0, DARKRED
+    WORD DARKRED, DARKRED, DARKRED, DARKRED, DARKRED
+    WORD 0, DARKRED, 0, DARKRED, 0
+
+    ;sprite #1
+    WORD 5 ; length
+    WORD 7 ; height 
+    WORD SALMON, 0, 0, 0, SALMON
+    WORD 0, SALMON, SALMON, SALMON, 0
+    WORD SALMON, 0, SALMON, 0, SALMON
+    WORD SALMON,SALMON, SALMON, SALMON, SALMON
+    WORD 0, DARKRED, DARKRED, DARKRED, 0
+    WORD DARKRED, DARKRED, 0, DARKRED, DARKRED
+    WORD DARKRED, 0, 0, 0, DARKRED
+
+    ;sprite #2
+    WORD 5 ; length
+    WORD 7 ; height 
+    WORD SALMON, 0, 0, 0, SALMON
+    WORD 0, SALMON, SALMON, SALMON, 0
+    WORD SALMON, SALMON, SALMON, SALMON, SALMON
+    WORD SALMON, 0, SALMON, 0, SALMON
+    WORD DARKRED, DARKRED, 0, DARKRED, DARKRED
+    WORD 0, DARKRED, DARKRED, DARKRED, 0
+    WORD DARKRED, 0, 0, 0, DARKRED
+
+    ;desctruction sprite
+    WORD 5 ; length
+    WORD 7 ; height 
+    WORD 0, LIGHTBLUE, 0, 0, 0
+    WORD LIGHTBLUE, BLUE, DARKBLUE, 0, 0
+    WORD 0, DARKBLUE, 0, 0, 0
+    WORD 0, 0, 0, 0, 0
+    WORD 0, 0, 0, LIGHTBLUE, 0
+    WORD 0, 0, LIGHTBLUE, BLUE, DARKBLUE
+    WORD 0, 0, 0, DARKBLUE, 0
 
 FRIEND_SPRITES:
+    ;initial sprite
     WORD 5 ; length
     WORD 5 ; height
-    WORD GREEN, GREEN, 0, GREEN, GREEN
-    WORD GREEN, 0, DARKGREEN, 0, GREEN
-    WORD 0, DARKGREEN, 0, DARKGREEN, 0
-    WORD GREEN, 0, DARKGREEN, 0, GREEN
-    WORD GREEN, GREEN, 0, GREEN, GREEN
+    WORD 0, DARKGREEN, DARKGREEN, DARKGREEN, 0
+    WORD DARKGREEN, NEONGREEN, NEONGREEN, NEONGREEN, DARKGREEN
+    WORD DARKGREEN, NEONGREEN, NEONGREEN, NEONGREEN, DARKGREEN
+    WORD DARKGREEN, NEONGREEN, NEONGREEN, NEONGREEN, DARKGREEN
+    WORD 0, DARKGREEN, DARKGREEN, DARKGREEN, 0    
+
+    ;first sprite after destruction
+    WORD 5 ; length
+    WORD 5 ; height 
+    WORD 0, 0, 0, 0, 0
+    WORD 0, DARKGREEN, DARKGREEN, 0, 0
+    WORD DARKGREEN, NEONGREEN, NEONGREEN, DARKGREEN, 0
+    WORD DARKGREEN, NEONGREEN, NEONGREEN, DARKGREEN, 0
+    WORD 0, DARKGREEN, DARKGREEN, 0, 0
+
+    ;second sprite after destruction
+    WORD 5 ; length
+    WORD 5 ; height 
+    WORD 0, 0, 0, 0, 0
+    WORD 0, 0, DARKGREEN, 0, 0
+    WORD 0, DARKGREEN, NEONGREEN, DARKGREEN, 0
+    WORD 0, 0, DARKGREEN, 0, 0
+    WORD 0, 0, 0, 0, 0
+
+    ;final sprite after destruction
+    WORD 5 ; length
+    WORD 5 ; height 
+    WORD 0, 0, 0, 0, 0
+    WORD 0, 0, 0, 0, 0
+    WORD 0, 0, NEONGREEN, 0, 0
+    WORD 0, 0, 0, 0, 0
+    WORD 0, 0, 0, 0, 0
+  
+SPRITE_PANEL:
+    ;sprite #0
+    WORD 3 ; length
+    WORD 3 ; height
+    WORD NEONYELLOW, NEONRED, CYAN 
+    WORD NEONPINK, CYAN, NEONYELLOW 
+    WORD NEONRED, NEONYELLOW, NEONPINK 
+
+    ;sprite #1
+    WORD 3 ; length
+    WORD 3 ; height
+    WORD NEONPINK, CYAN, NEONYELLOW
+    WORD NEONYELLOW, NEONPINK, NEONRED
+    WORD NEONRED, CYAN, NEONPINK
+
+    ;sprite #2
+    WORD 3 ; length
+    WORD 3 ; height
+    WORD NEONYELLOW, NEONRED, CYAN 
+    WORD NEONRED, NEONYELLOW, NEONPINK 
+    WORD NEONPINK, CYAN, NEONYELLOW 
+
+    ;sprite #3
+    WORD 3 ; length
+    WORD 3 ; height
+    WORD NEONPINK, CYAN, NEONYELLOW 
+    WORD NEONYELLOW, NEONRED, CYAN 
+    WORD NEONRED, NEONYELLOW, NEONPINK
+
+    ;sprite #4
+    WORD 3 ; length
+    WORD 3 ; height
+    WORD NEONRED, NEONYELLOW, NEONPINK 
+    WORD NEONYELLOW, NEONRED, CYAN 
+    WORD NEONPINK, CYAN, NEONYELLOW 
+
+    ;sprite #5
+    WORD 3 ; length
+    WORD 3 ; height
+    WORD NEONPINK, CYAN, NEONYELLOW 
+    WORD NEONRED, NEONYELLOW, NEONPINK
+    WORD NEONYELLOW, NEONRED, CYAN
 
 ; Exceptions Table
 EXCEPTIONS:
@@ -228,7 +361,7 @@ start:
 
         CALL update_energy
         CALL update_probes
-        ;CALL update_asteroids
+        CALL update_asteroids
 
         CALL event_handler    ; carry out keyboard commands
 
@@ -240,7 +373,7 @@ start:
         PUSH R0
         PUSH R1
 
-        loop_menu:
+        loop_main_menu:
             CALL keyboard_listner
             MOV R0, [LAST_PRESSED_KEY]
             MOV R1, KEY_START_GAME
@@ -689,13 +822,13 @@ update_probes:
     MOV R5, R0
     ADD R5, 1            ; 3 probes -> layers (2, 3, 4) so add 1 to account for that
 
-    update_loop:
+    update_probes_loop:
         CMP R0, 0
         JZ end_update_loop ; End loop when all probes were checked
 
         MOV R1, [R2+8] ; Get amount of steps
         CMP R1, -1     ; If -1 (not active) then skip update
-        JZ next_iter
+        JZ next_iter_probes
 
         MOV R3, PROBE_MAX_STEPS
         CMP R1, R3     ; If 12 (12 steps were taken) then move home
@@ -722,11 +855,11 @@ update_probes:
             MOV [SET_LAYER], R5 ; Get correct layer
             CALL update_object
 
-        next_iter:
+        next_iter_probes:
             SUB R5, 1       ; Next probe layer
             ADD R2, R6 ; Offset by 16 to get address of next probe
             SUB R0, 1  ; Decrement iterator (number of probes)
-            JMP update_loop
+            JMP update_probes_loop
 
 
     end_update_loop:
@@ -745,15 +878,151 @@ update_probes:
 
 
 
+update_asteroids:
+    PUSH R0
+    PUSH R2
+    PUSH R3
+    PUSH R4
+    PUSH R5
+    PUSH R6
+    PUSH R9
+    PUSH R10
+
+    MOV R0, [ASTEROIDS_UPDATE_FLAG]
+    CMP R0, 0
+    JZ end_update_asteroids
+
+    MOV R6, 12                   ; Next asteroid offset
+    MOV R0, [ASTEROIDS]          ; Get number of asteroids
+    MOV R2, ASTEROIDS
+    ADD R2, 2                    ; Store address of first asteroid (offset by 2)
+    MOV R5, R0
+    ADD R5, 1                    ; (start at layer 4 which is asteroid 1 and go up in order until layer 8 which is asteroid 4)
+
+    update_asteroids_loop:
+        CMP R0, 0
+        JZ end_update_asteroids_loop
+
+        MOV R1, [R2+8] ; Get amount of steps
+        CMP R1, -1     ; If -1 (not active) then regenerate asteroid
+        JZ regen_asteroid
+
+        MOV R3, ASTEROID_MAX_STEPS
+        CMP R1, R3     ; If 31 (y coord reached bottom screen) then set inactive
+        JLT normal
+        MOV R3, -1
+        MOV [R2+8], R3 ; Set to -1 (not active)
+        JMP next_iter_asteroids
+
+        normal:
+            MOV R3, [R2]    ; Current X
+            MOV R4, [R2+10] ; Direction (-1, 0, 1 -> left, up, right)
+            ADD R3, R4
+            MOV R4, [R2+2]  ; Current Y
+            ADD R4, 1       ; Move 1 down
+            JMP move_asteroid
+
+        regen_asteroid:
+            MOV R9, 3
+            CALL rnd_generator   ; Generate column (left, middle, right)
+            CALL column_gen      ; Also generates random direction (left, middle, right) if in middle column
+
+            MOV R9, 100
+            CALL rnd_generator   ; Generate type (1/4 chance for friend asteroid)
+            CALL type_gen
+            
+            MOV R4, 0
+            ; R3 now contains new X coord and R4 contains new Y coord it can now be updated
+            MOV R1, -1           ; Set steps to 0 (ready) (We set to -1 to account for the next ADD)
+
+        move_asteroid:
+            ADD R1, 1           ; Steps++
+            MOV [R2+8], R1      ; Update steps in memory  
+            MOV [SET_LAYER], R5 ; Get correct layer
+            CALL update_object
+
+        next_iter_asteroids:
+            ADD R5, 1       ; Next asteroid layer
+            ADD R2, R6      ; Offset by 10 to get address of next asteroid
+            SUB R0, 1       ; Decrement iterator (number of asteroids)
+            JMP update_asteroids_loop
+
+
+    end_update_asteroids_loop:
+        MOV [ASTEROIDS_UPDATE_FLAG], R0 
+
+    end_update_asteroids:
+        POP R10
+        POP R9
+        POP R6
+        POP R5
+        POP R4
+        POP R3
+        POP R2
+        POP R0
+        RET
+
+
+
 ;Arguments:
-;  - R9 : Range of numbers
+;  - R9 : Range of numbers (0 -> N-1)
 ;Returns R10 : Final Random number
 rnd_generator:
-    MOV R10, PIN_IN
-    MOVB R10, [R10]      ; Read bits from "air" (PIN)
-    SHR R10, 4           ; Put bits in low nibble
+    MOV R10, [PIN_IN]      ; Read bits from "air" (PIN)
+    ;SHR R10, 4           ; Put bits in low nibble
     MOD R10, R9          ; Mod by the argument passed by R9
     RET
+
+
+column_gen:
+    PUSH R0
+
+    CMP R10, 0
+    JZ spawn_left
+
+    CMP R10, 1
+    JZ spawn_middle
+
+    CMP R10, 2
+    JZ spawn_right
+
+    spawn_left:
+        MOV R3, 0           ; Set x coord to 0 (left)
+        MOV R0, 1
+        JMP end_column_gen
+    spawn_middle:
+        MOV R3, 30          ; Set x coord to 30 (middle)
+        MOV R9, 3
+        CALL rnd_generator
+        SUB R10, 1          ; R10 outputs (0 or 1 or 2) so we normalize to (-1, 0, 1) which are the direction constants
+        MOV R0, R10
+        JMP end_column_gen
+    spawn_right:
+        MOV R3, 59          ; set x coord to 59 (right)
+        MOV R0, -1
+    end_column_gen:
+        MOV [R2+10], R0     ; Update direction
+        POP R0
+        RET
+
+
+type_gen:
+    PUSH R0
+
+    MOV R0, 25
+    CMP R10, R0             ; 25percent chance in being friend asteroid
+    JLT spawn_friend
+
+    MOV R0, ENEMY_SPRITES   ; Set sprite to enemy type
+    JMP end_type_gen
+
+    spawn_friend:
+        MOV R0, FRIEND_SPRITES  ; Set sprite to friend type
+    
+    end_type_gen:
+        MOV [R2+6], R0          ; Apply changes in object
+        POP R0
+        RET
 
 
 hex_to_dec:
