@@ -471,8 +471,8 @@ event_handler:
 
         loop_pause_menu:
             CALL listen_keyboard
-            MOV R0, [CURRENT_PRESSED_KEY]
-            MOV R1, KEY_PAUSE
+            MOV R0, [LAST_PRESSED_KEY]
+            MOV R1, KEY_PAUSE_GAME
             CMP R0, R1
             JNZ loop_pause_menu
 
