@@ -581,6 +581,9 @@ event_handler:
         CALL draw_entity
 
         CALL energy_decrement ; Probe spends energy
+
+        MOV R2, 6
+        MOV [PLAY_AUDIO], R2  ; Play shoot.wav
         
         JMP end_event_handler
 
@@ -926,7 +929,7 @@ update_asteroids:
         regen_asteroid:
             MOV R9, 5
             CALL rnd_generator 
-            CALL column_gen      ; Generates pair (column/direction) 1/5 chance for each combination
+            CALL column_gen     ; Generates pair (column/direction) 1/5 chance for each combination
 
             MOV R9, 100
             CALL rnd_generator
