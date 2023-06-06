@@ -526,7 +526,7 @@ event_handler:
 
     MOV R1, KEY_PAUSE_GAME
     CMP R0, R1
-    ;JZ game_pause - WIP
+    JZ game_pause
 
     MOV R1, KEY_STOP_GAME
     CMP R0, R1
@@ -599,15 +599,7 @@ event_handler:
         MOV R2, [SET_BACKGROUND] ;save current background
 
         MOV R1, 4
-        MOV [CLEAR_SCREEN], R1   ;clear pixels on screen
         MOV [SET_BACKGROUND], R1 ;set background to paused_overlay.png
-
-        ;wait till the key is released
-        waiting_release:
-            CALL keyboard_listner
-            MOV R0, [EXECUTE_COMMAND]
-            CMP R0, 0
-            JNZ waiting_release
 
         loop_pause_menu:
             CALL keyboard_listner
