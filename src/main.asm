@@ -52,16 +52,16 @@ LAYER_ASTEROID_4   EQU 8
 ; Colors
 BLACK              EQU 0F000H
 LIGHTGREY          EQU 0F888H
-GREY               EQU 04888H
-SALMON             EQU 08F10H
+GREY               EQU 4888H
+SALMON             EQU 8F10H
 MAGENTA            EQU 0D933H
 DARKRED            EQU 0F900H
 NEONRED            EQU 0FF00H
 NEONGREEN          EQU 0F0F0H	
 DARKGREEN          EQU 0F070H	
 DARKBLUE           EQU 0F04FH
-LIGHTBLUE          EQU 0607FH
-BLUE               EQU 0903FH
+LIGHTBLUE          EQU 607FH
+BLUE               EQU 903FH
 CYAN               EQU 0F1FFH
 NEONPINK           EQU 0FF0FH
 ORANGE             EQU 0FD60H 
