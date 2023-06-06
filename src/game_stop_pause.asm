@@ -470,7 +470,7 @@ event_handler:
             JNZ waiting_release
 
         loop_pause_menu:
-            CALL listen_keyboard
+            CALL keyboard_listner
             MOV R0, [LAST_PRESSED_KEY]
             MOV R1, KEY_PAUSE_GAME
             CMP R0, R1
