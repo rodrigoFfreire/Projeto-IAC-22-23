@@ -924,13 +924,13 @@ update_asteroids:
             JMP move_asteroid
 
         regen_asteroid:
-            MOV R9, 3
-            CALL rnd_generator   ; Generate column (left, middle, right)
-            CALL column_gen      ; Also generates random direction (left, middle, right) if in middle column
+            MOV R9, 5
+            CALL rnd_generator 
+            CALL column_gen      ; Generates pair (column/direction) 1/5 chance for each combination
 
             MOV R9, 100
-            CALL rnd_generator   ; Generate type (1/4 chance for friend asteroid)
-            CALL type_gen
+            CALL rnd_generator
+            CALL type_gen        ; Generate type (1/4 chance for friend asteroid)
             
             MOV R4, 0
             ; R3 now contains new X coord and R4 contains new Y coord it can now be updated
@@ -979,28 +979,45 @@ column_gen:
     PUSH R0
 
     CMP R10, 0
-    JZ spawn_left
+    JLT spawn_left
 
     CMP R10, 1
-    JZ spawn_middle
+    JLT spawn_right
 
     CMP R10, 2
-    JZ spawn_right
+    JLT spawn_middle_down
+
+    CMP R10, 3
+    JLT spawn_middle_left
+
+    CMP R10, 4
+    JLT spawn_middle_right
 
     spawn_left:
-        MOV R3, 0           ; Set x coord to 0 (left)
-        MOV R0, 1
+        MOV R3, 0           ; Set x coord to 0
+        MOV R0, 1           ; Set direction to 1 (right)
         JMP end_column_gen
-    spawn_middle:
-        MOV R3, 30          ; Set x coord to 30 (middle)
-        MOV R9, 3
-        CALL rnd_generator
-        SUB R10, 1          ; R10 outputs (0 or 1 or 2) so we normalize to (-1, 0, 1) which are the direction constants
-        MOV R0, R10
-        JMP end_column_gen
+
     spawn_right:
-        MOV R3, 59          ; set x coord to 59 (right)
-        MOV R0, -1
+        MOV R3, 59          ; set x coord to 59
+        MOV R0, -1          ; Set direction to -1 (left)
+        JMP end_column_gen
+
+    spawn_middle_down:
+        MOV R3, 30          ; Set x coord to 30 (middle)
+        MOV R0, 0           ; Set direction to 0 (down)
+        JMP end_column_gen
+
+    spawn_middle_left:
+        MOV R3, 30          ; Set x coord to 30 (middle)
+        MOV R0, -1          ; Set direction to -1 (left)
+        JMP end_column_gen
+
+    spawn_middle_right:
+        MOV R3, 30          ; Set x coord to 30 (middle)
+        MOV R0, 1           ; Set direction to 1 (right)
+        JMP end_column_gen
+
     end_column_gen:
         MOV [R2+10], R0     ; Update direction
         POP R0
