@@ -24,13 +24,21 @@ ENERGY_DISPLAYS    EQU 0A000H                   ; (POUT-1)
 ; Screen Commands
 MEDIA_COMMAND	   EQU 6000H                    ; Media center commands
 
+PLAY_AUDIO         EQU MEDIA_COMMAND + 5AH
+PLAY_VIDEO_LOOP    EQU MEDIA_COMMAND + 5CH
+PAUSE_VIDEO        EQU MEDIA_COMMAND + 5EH
+RESUME_VIDEO       EQU MEDIA_COMMAND + 60H
+STOP_VIDEO         EQU MEDIA_COMMAND + 66H
+
 SET_LINE           EQU MEDIA_COMMAND + 0AH
 SET_COLUMN         EQU MEDIA_COMMAND + 0CH
-SET_PIXEL   	   EQU MEDIA_COMMAND + 12H
+SET_PIXEL          EQU MEDIA_COMMAND + 12H
 SET_BACKGROUND     EQU MEDIA_COMMAND + 42H
 SET_LAYER          EQU MEDIA_COMMAND + 04H
+SET_FOREGROUND     EQU MEDIA_COMMAND + 46H
+DELETE_FOREGROUND  EQU MEDIA_COMMAND + 44H
 DELETE_LAYER       EQU MEDIA_COMMAND
-CLEAR_SCREEN	   EQU MEDIA_COMMAND + 02H
+CLEAR_SCREEN       EQU MEDIA_COMMAND + 02H
 DELETE_WARNING     EQU MEDIA_COMMAND + 40H
 
 SCREEN_WIDTH       EQU 63                        ; Max screen width
@@ -68,10 +76,6 @@ ORANGE             EQU 0FD60H
 WHITE              EQU 0FFFFH
 NEONYELLOW         EQU 0FFF0H
 YELLOW             EQU 0FEE0H
-
-
-PLAY_AUDIO         EQU MEDIA_COMMAND + 5AH
-PLAY_VIDEO_LOOP    EQU MEDIA_COMMAND + 5CH
 
 
 ; Keys
@@ -591,24 +595,27 @@ event_handler:
         JMP end_event_handler
 
     game_pause:
-        ;if last key pressed is the pause key skip
-        MOV R2, [LAST_PRESSED_KEY]
-        CMP R0, R2
-        JZ end_event_handler
+        MOV R0, 0
+        MOV R1, 1
+        MOV [PLAY_AUDIO], R1
 
-        MOV R2, [SET_BACKGROUND] ;save current background
-
-        MOV R1, 4
-        MOV [SET_BACKGROUND], R1 ;set background to paused_overlay.png
+        MOV [PAUSE_VIDEO], R0      ;stops the video on background
+        MOV [SET_FOREGROUND], R1  
 
         loop_pause_menu:
             CALL keyboard_listner
-            MOV R0, [LAST_PRESSED_KEY]
-            MOV R1, KEY_PAUSE_GAME
-            CMP R0, R1
+            MOV R3, [EXECUTE_COMMAND]
+            CMP R3, R1
+            JNZ loop_pause_menu
+            MOV R3, [LAST_PRESSED_KEY]
+            MOV R4, KEY_PAUSE_GAME
+            CMP R4, R3
             JNZ loop_pause_menu
 
-        MOV [SET_BACKGROUND], R2
+        MOV [PLAY_AUDIO], R1
+        MOV [DELETE_FOREGROUND], R0
+        MOV [RESUME_VIDEO], R0     
+
         JMP end_event_handler
 
 ; ***************************************************************************
