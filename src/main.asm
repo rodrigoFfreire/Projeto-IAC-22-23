@@ -345,6 +345,9 @@ initialize:
 start:
     CALL main_menu
 
+    MOV R1, 1
+    MOV [PLAY_AUDIO], R1       ; Play beep sound effect after pressing start key
+
     MOV R1, 0
     MOV [PLAY_VIDEO_LOOP], R1  ; Set video loop
 
