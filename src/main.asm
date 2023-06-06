@@ -910,12 +910,12 @@ update_asteroids:
 
         MOV R3, ASTEROID_MAX_STEPS
         CMP R1, R3     ; If 31 (y coord reached bottom screen) then set inactive
-        JLT normal
+        JLT asteroid_new_coords
         MOV R3, -1
-        MOV [R2+8], R3 ; Set to -1 (not active)
+        MOV [R2+8], R3 ; Set to -1 (not active) to be dealt with next time
         JMP next_iter_asteroids
 
-        normal:
+        asteroid_new_coords:
             MOV R3, [R2]    ; Current X
             MOV R4, [R2+10] ; Direction (-1, 0, 1 -> left, up, right)
             ADD R3, R4
@@ -1025,6 +1025,7 @@ type_gen:
         POP R0
         RET
 
+
 update_panel:
     PUSH R0
     PUSH R2
@@ -1034,15 +1035,15 @@ update_panel:
     JNZ end_update_panel
 
     MOV R2, SPACESHIP_PANEL
-    MOV R0, [R2 + 4]
+    MOV R0, [R2+4]
     CMP R0, 5
-    JLT index_increment
+    JLT next_frame
     MOV R0, -1
 
-    index_increment:
+    next_frame:
         ADD R0, 1
     
-    MOV [R2 + 4], R0
+    MOV [R2+4], R0
 
     MOV R0, LAYER_NAVPANEL
     MOV [SET_LAYER], R0
