@@ -393,7 +393,7 @@ event_handler:
 
     MOV R1, KEY_STOP_GAME
     CMP R0, R1
-    JZ game_stop 
+    ;JZ game_stop 
 
     end_event_handler:
         POP R4
@@ -482,7 +482,7 @@ event_handler:
         
 
 
-    game_stop:
+    ;game_stop:
 
 ; ***************************************************************************
 ; * UPDATE_OBJECT
