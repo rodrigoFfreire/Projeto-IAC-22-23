@@ -2,42 +2,6 @@
 ![](banner.png)
 
 
-# Indice
-1. [TODO](#TODO)
-2. [Documentação Rotinas](#Documentação-Rotinas)
-
-<br/><br/>
-
-## TODO (Lista de coisas para fazer)
-- [X] ~~Temporizações (Interrupções)    (Rodas)~~
-  - EI0 -> Update movimento asteroids
-  - EI1 -> Update movimento sondas
-  - EI2 -> Descrescimo da energia
-  - EI3 -> Update animação do painel
-
-- [X] ~~Menu Inicial  (David)~~
-- [ ] Rotinas de Atualizacao (asteroids, ~~sondas, energia~~) (Rodas)
-- [ ] Refazer texturas + Animações(painel, asteroides)  (Aleixo)
-  - Animação do painel
-  - Animação asteroide a explodir
-  - Animação asteroide amigavel
-  - Rotina `update_energy`
-- [ ] Criar tabela de objetos (3 sondas, 4 asteroides)  (Aleixo)
-- [X] ~~Random Number Generator   (Rodas)~~
-- [ ] Colisões
-- [X] ~~Conversão Hexa para Decimal  (David)~~
-- [ ] Menus + Sons + backgrounds (Verificar condicoes: sem energia, colisao com a nave, terminar pela tecla, pausa)
-  
-- [ ] Controlo (para tratar das teclas de começar, suspender/continuar e terminar o jogo).
-- [ ] Nave (para desenhar o painel de instrumentos e produzir o efeito das luzes);
-- [ ] Energia da nave (para implementar o gasto periódico de energia);
-- [ ] Sonda (para controlar o lançamento, implementar o movimento, o limite do alcance e a deteção 
- de colisão de cada sonda);
-- [ ] Asteroide (para controlar as ações e evolução de cada um dos asteroides, incluindo verificação 
-de colisão com a nave).
-
-<br/><br/>
-
 ## Documentação Rotinas
 Encontra-se aqui em baixo informações sobre as rotinas principais do jogo como registos de argumentos, memoria acedida etc...
 
