@@ -1060,6 +1060,12 @@ type_gen:
     JLT spawn_friend
 
     MOV R0, ENEMY_SPRITES   ; Set sprite to enemy type
+
+    ; Set to enemy type - choose 1 of the 3 different enemy sprites
+    MOV R9, 3
+    CALL rng_range          ; Returns random value to R10
+    MOV [R2+4], R10         ; Update new subsprite in memory
+
     JMP end_type_gen
 
     spawn_friend:
