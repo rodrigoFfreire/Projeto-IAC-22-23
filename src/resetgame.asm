@@ -6,8 +6,10 @@ rot_reset_game:
     PUSH R1
     PUSH R2
     PUSH R3
-    PUSH R8
+    PUSH R4
+    PUSH R5
 
+    MOV [CLEAR_SCREEN], R0
 
     MOV R0, [ASTEROIDS]
 
@@ -16,7 +18,7 @@ rot_reset_game:
 
     reset_asteroids:
         CMP R0, 0
-        JNZ reset_probes
+        JZ reset_probes
 
         MOV R2, -1
         MOV [R3 + 8], R2
@@ -28,33 +30,38 @@ rot_reset_game:
         JMP reset_asteroids
 
 
-    ;spaceship
-    MOV R0, [SPACESHIP]
-    MOV R3, SPACESHIP
-    ADD R3, 4
-    MOV R2, 0
-    MOV R3, R2
-
-
-    ;probes
-    MOV R0, [PROBES]
-
-    MOV R3, PROBES
-    ADD R3, 2
-
     reset_probes:
-        CMP R0, 0
-        JNZ reset_rest
 
-        MOV R2, 0
-        MOV [R3 + 4], R2
+        ;probes
+        MOV R0, [PROBES]
 
-        MOV R2, 8
-        ADD R3, R2 
+        MOV R3, PROBES
+        ADD R3, 2
 
-        SUB R0, 1
-        JMP reset_probes
+        probes:
+            CMP R0, 0
+            JZ reset_rest
 
+            MOV R2, -1
+            MOV [R3 + 8], R2
+
+            MOV R4, [R3 + 12]
+            MOV [R3], R4
+
+            MOV R5, [R3 + 14]
+            MOV [R3 + 2], R5
+
+            MOV R2, 16
+            ADD R3, R2 
+
+            SUB R0, 1
+            JMP probes
+
+    ;spaceship
+    MOV R3, LAYER_SPACESHIP
+    MOV [SET_LAYER], R3 
+    MOV R2, SPACESHIP
+    CALL draw_entity
 
     reset_rest:
 
@@ -62,26 +69,26 @@ rot_reset_game:
     MOV [CURRENT_ENERGY], R2
 
     MOV R0, 0
-    MOV [SET_BACKGROUND], R0
+    MOV [PLAY_VIDEO_LOOP], R0
 
+    MOV R2, 100H
+    MOV [ENERGY_DISPLAYS], R2
 
     ;update flags
     MOV R0, 0
     MOV [ASTEROIDS_UPDATE_FLAG], R0
 
-    MOV R0, 0
     MOV [PROBES_UPDATE_FLAG], R0
 
-    MOV R0, 0
     MOV[ENERGY_UPDATE_FLAG], R0
 
-    MOV R0, 0
     MOV [NAVPANEL_UPDATE_FLAG], R0
 
 
 
     ret_reset_game:
-        POP R8
+        POP R5
+        POP R4        
         POP R3
         POP R2
         POP R1
