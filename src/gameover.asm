@@ -21,6 +21,9 @@ rot_game_over:
     ;espera até se clicar na tecla para voltar a jogar
     loop_game_over:
         CALL keyboard_listner
+        MOV R0, [EXECUTE_COMMAND]
+        CMP R0, 1
+        JNZ loop_game_over
         MOV R0, [LAST_PRESSED_KEY]
         MOV R1, KEY_START_GAME
         CMP R0, R1
