@@ -493,8 +493,8 @@ convert_to_key_aux:
 ; * _________________________________________________________________________
 ; * R0 - Execute command flag, last pressed key
 ; * R1 - Key ID for each event
-; * R2 - Base address of objects
-; * R3 - Offsets, sets media options, object properties
+; * R2 - Base address of entities
+; * R3 - Offsets, sets media options, entity properties
 ; * R4 - Layer Values, sets media options
 ; ***************************************************************************
 event_handler:
@@ -641,40 +641,40 @@ event_handler:
 
 
 ; ***************************************************************************
-; * UPDATE_OBJECT -> Updates objects position and subsprite
+; * UPDATE_entity -> Updates entities position and subsprite
 ; * Arguments
-; *     - R2 -> Base address of entity/object
+; *     - R2 -> Base address of entity
 ; *     - R3 -> New x coordinate
 ; *     - R4 -> New y coordinate
 ; *     - R5 -> Layer ID
 ; * _________________________________________________________________________
-; * R0 - Checks subsprite_index of object 
+; * R0 - Checks subsprite_index of entity 
 ; ***************************************************************************
-update_object:
+update_entity:
     PUSH R0
 
     MOV [DELETE_LAYER], R5  ; Deletes previous frame for layer stored in R5
 
-	MOV [R2], R3            ; UPDATE MEMORY OF OBJECT WITH NEW X POSITION
-	MOV [R2+2], R4          ; UPDATE MEMORY OF OBJECT WITH NEW Y POSITION
+	MOV [R2], R3            ; UPDATE MEMORY OF entity WITH NEW X POSITION
+	MOV [R2+2], R4          ; UPDATE MEMORY OF entity WITH NEW Y POSITION
 
     MOV R0, [R2+4]
-    CMP R0, -1              ; Check if object is invisible (if so skip draw)
-    JZ end_update_object
+    CMP R0, -1              ; Check if entity is invisible (if so skip draw)
+    JZ end_update_entity
 
-    CALL draw_entity        ; DRAW OBJECT IN NEW COORDINATES
+    CALL draw_entity        ; DRAW entity IN NEW COORDINATES
 
-    end_update_object:
+    end_update_entity:
         POP R0
         RET
 
 
 ; ***************************************************************************
-; * DRAW ENTITY -> Draws an object/entity
+; * DRAW ENTITY -> Draws an entity
 ; * Arguments
-; *     - R2 -> Base address of entity/object
+; *     - R2 -> Base address of entity
 ; * _________________________________________________________________________
-; R0 - Entity/object base address
+; R0 - Entity base address
 ; R1 - Sprite base address
 ; R2 - Length of sprite, current x pos
 ; R3 - Height of sprite, current y pos
@@ -690,21 +690,22 @@ draw_entity:
     PUSH R5
     PUSH R6
     PUSH R7
-    MOV R0, [R2+6]    ; Get base address of sprites
+
+    MOV R0, [R2+6]                   ; Get base address of sprites
     
-    MOV R1, [R0]      ; Sprite length
+    MOV R1, [R0]                     ; Sprite length
     MOV R3, [R0+2]
-    MUL R1, R3        ; Multiply with sprite height to get sprite area
-    SHL R1, 1         ; Multiply by 2 for correct memory address
-    ADD R1, 4         ; Add 4 to skip to next subsprite length (subsprite mapping offset)
+    MUL R1, R3                       ; Multiply with sprite height to get sprite area
+    SHL R1, 1                        ; Multiply by 2 for correct memory address
+    ADD R1, 4                        ; Add 4 to skip to next subsprite length (subsprite mapping offset)
     
     MOV R3, [R2+4]
-    MUL R1, R3        ; Finally multiply by subsprite index to get final offset
-    ADD R1, R0        ; Get the address of the current subsprite
+    MUL R1, R3                       ; Finally multiply by subsprite index to get final offset
+    ADD R1, R0                       ; Get the base address of the current subsprite
 
-    MOV R0, R2        ; Get base address of entity
-    MOV R2, [R1]      ; Length of sprite
-    MOV R3, [R1+2]    ; Height of sprite    
+    MOV R0, R2                       ; Get base address of entity
+    MOV R2, [R1]                     ; Length of sprite
+    MOV R3, [R1+2]                   ; Height of sprite    
 
     MOV R5, -1                       ; Start at -1 to account for first ADD
     draw_from_table:
@@ -737,16 +738,16 @@ draw_pixel:
     PUSH R2
     PUSH R3
 
-    MOV R2, [R0]          ; Current x coord
-    MOV R3, [R0+2]        ; Current y coord
-    ADD R2, R6            ; Add x coord + offset for correct column
-    ADD R3, R5            ; Add y coord + offset for correct line
+    MOV R2, [R0]                      ; Current x coord
+    MOV R3, [R0+2]                    ; Current y coord
+    ADD R2, R6                        ; Add x coord + offset for correct column
+    ADD R3, R5                        ; Add y coord + offset for correct line
     
-    MOV [SET_COLUMN], R2  ; Set pixel column
-    MOV [SET_LINE], R3    ; Set pixel Line
-    MOV R2, [R7]          ; get color from address of pixel - R7 calculated by check_pixel_adress
+    MOV [SET_COLUMN], R2              ; Set pixel column
+    MOV [SET_LINE], R3                ; Set pixel Line
+    MOV R2, [R7]                      ; get color from address of pixel - R7 calculated by check_pixel_adress
     
-    MOV [SET_PIXEL], R2   ; Draw pixel
+    MOV [SET_PIXEL], R2               ; Draw pixel
 
     POP R3
     POP R2
@@ -764,7 +765,7 @@ check_pixel_address:
     ADD R5, R6            ; 2D coords into 1D -> length*x + y
     SHL R5, 1             ; Multiply by 2 due to byte-adressable memory design (only pair addresses)
     ADD R5, 4             ; Add offset of 4 because the table starts at (Base Address + 4)
-    ADD R5, R1            ; Add the base address of object and get final address
+    ADD R5, R1            ; Add the base address of entity and get final address
     
     MOV R7, R5            ; Save it in R7
     MOV R0, [R7]          ; Read the value (color)
@@ -802,40 +803,41 @@ update_energy_idling:
 
 
 ; ***************************************************************************
-; * ENERGY_VALUE_UPDATE -> Increments or decrements energy
-; * Arguments:
-; *     R4 -> new energy increment or decrement
+; * UPDATE_PANEL -> Animates spaceship panel
 ; * _________________________________________________________________________
-; * R8 - Converted energy for displays, sets media options and flags
-; * R9 - New current energy
+; * R0 - flags, updates, layer, other values
+; * R2 - Base address of spaceship panel
 ; ***************************************************************************
-energy_value_update:
-    PUSH R8
-    PUSH R9
+update_panel:
+    PUSH R0
+    PUSH R2
 
-    ; Get current energy, add value of R4 (can be negative) and update memory
-    MOV R9, [CURRENT_ENERGY]
-    ADD R9, R4
-    MOV [CURRENT_ENERGY], R9
+    ; Get update flag (if not 1 then dont update)
+    MOV R0, [NAVPANEL_UPDATE_FLAG]
+    CMP R0, 1
+    JNZ end_update_panel
 
-    CALL hex_to_dec                     ; Reads from R9 and converted output gets written on R8
-    MOV [ENERGY_DISPLAYS], R8           ; Display energy (converted)
+    MOV R2, SPACESHIP_PANEL             ; Get base address of spaceship panel
+    MOV R0, [R2+4]                      ; Get subprite index (keyframe)
+    CMP R0, 5                           ; If at index 5 set it back to 0
+    JLT next_frame                      ; If < 5 just increment normally
+    MOV R0, -1                          ; first set at -1 to account for next add
 
-    CMP R9, 0                           ; Check energy is <= 0 (game over)
-    JGT end_energy_value_update         ; If not game over end routine
+    next_frame:
+        ADD R0, 1
+    
+    MOV [R2+4], R0                      ; Update new subsprite
 
-    MOV R8, 0
-    MOV [ENERGY_DISPLAYS], R8           ; Make sure to display 000 at then end
+    MOV R0, LAYER_NAVPANEL
+    MOV [SET_LAYER], R0                 ; Set correct layer
+    CALL draw_entity                    ; Draw panel
 
-    MOV R8, 1
-    MOV [GAME_OVER_FLAG], R8            ; Enable game over flag
+    MOV R0, 0
+    MOV [NAVPANEL_UPDATE_FLAG], R0      ; Turn off panel update flag
 
-    MOV R8, 3
-    MOV [SET_BACKGROUND], R8            ; Set background to no_energy.png (index 3)
-
-    end_energy_value_update:
-        POP R9
-        POP R8
+    end_update_panel:
+        POP R2 
+        POP R0
         RET
 
 ; ------------------------------------------- FALTA COMENTAR DEVIDAMENTE A PARTIR DAQUI -----------------------------------------------------
@@ -891,7 +893,7 @@ update_probes:
             ADD R1, 1                   ; Steps++
             MOV [R2+8], R1              ; Update steps in memory 
             MOV [SET_LAYER], R5         ; Get correct layer
-            CALL update_object
+            CALL update_entity
 
         next_iter_probes:
             SUB R5, 1                   ; Next probe layer
@@ -962,11 +964,11 @@ update_asteroids:
 
         regen_asteroid:
             MOV R9, 5
-            CALL rnd_generator 
+            CALL rng_range 
             CALL column_gen     ; Generates pair (column/direction) 1/5 chance for each combination
 
             MOV R9, 100
-            CALL rnd_generator
+            CALL rng_range
             CALL type_gen        ; Generate type (1/4 chance for friend asteroid)
             
             MOV R4, 0
@@ -977,7 +979,7 @@ update_asteroids:
             ADD R1, 1           ; Steps++
             MOV [R2+8], R1      ; Update steps in memory  
             MOV [SET_LAYER], R5 ; Get correct layer
-            CALL update_object
+            CALL update_entity
 
         next_iter_asteroids:
             ADD R5, 1       ; Next asteroid layer
@@ -1064,82 +1066,50 @@ type_gen:
         MOV R0, FRIEND_SPRITES  ; Set sprite to friend type
     
     end_type_gen:
-        MOV [R2+6], R0          ; Apply changes in object
-        POP R0
-        RET
-
-update_panel:
-    PUSH R0
-    PUSH R2
-
-    MOV R0, [NAVPANEL_UPDATE_FLAG] 
-    CMP R0, 1
-    JNZ end_update_panel
-
-    MOV R2, SPACESHIP_PANEL
-    MOV R0, [R2+4]
-    CMP R0, 5
-    JLT next_frame
-    MOV R0, -1
-
-    next_frame:
-        ADD R0, 1
-    
-    MOV [R2+4], R0
-
-    MOV R0, LAYER_NAVPANEL
-    MOV [SET_LAYER], R0
-    CALL draw_entity
-
-    MOV R0, 0
-    MOV [NAVPANEL_UPDATE_FLAG], R0
-
-    end_update_panel:
-        POP R2 
+        MOV [R2+6], R0          ; Apply changes in entity
         POP R0
         RET
 
 
-hex_to_dec:
-    PUSH R1
-    PUSH R2
-    PUSH R3
+;------------------------------------------- COMENTAR DEVIDAMENTE ATÉ AQUI -----------------------------------------------------
+; ***************************************************************************
+; * ENERGY_VALUE_UPDATE -> Increments or decrements energy
+; * Arguments:
+; *     R4 -> new energy increment or decrement
+; * _________________________________________________________________________
+; * R8 - Converted energy for displays, sets media options and flags
+; * R9 - New current energy
+; ***************************************************************************
+energy_value_update:
+    PUSH R8
     PUSH R9
 
-    MOV R1, 1000
-    MOV R2, 10
+    ; Get current energy, add value of R4 (can be negative) and update memory
+    MOV R9, [CURRENT_ENERGY]
+    ADD R9, R4
+    MOV [CURRENT_ENERGY], R9
 
-    MOV R8, 0 ;inicialização do resultado decimal
+    CALL hex_to_dec                     ; Reads from R9 and converted output gets written on R8
+    MOV [ENERGY_DISPLAYS], R8           ; Display energy (converted)
 
-    loop_converter:
-        MOD R9, R1 
-        DIV R1, R2
+    CMP R9, 0                           ; Check energy is <= 0 (game over)
+    JGT end_energy_value_update         ; If not game over end routine
 
-        CMP R1, 0 ; se for 0 termina o loop
-        JZ end_hex_to_dec
+    MOV R8, 0
+    MOV [ENERGY_DISPLAYS], R8           ; Make sure to display 000 at then end
 
-        MOV R3, R9
-        DIV R3, R1
+    MOV R8, 1
+    MOV [GAME_OVER_FLAG], R8            ; Enable game over flag
 
-        SHL R8, 4 ;desloca para a esquerda para a entrada do novo digito
-        OR R8, R3 ;vai escrevendo o resultado
+    MOV R8, 3
+    MOV [SET_BACKGROUND], R8            ; Set background to no_energy.png (index 3)
 
-        JMP loop_converter
-
-    end_hex_to_dec:
-    POP R9
-    POP R3
-    POP R2
-    POP R1
-    RET
+    end_energy_value_update:
+        POP R9
+        POP R8
+        RET
 
 
-rnd_generator:
-    MOV R10, [PIN_IN]      ; Read bits from "air" (PIN)
-    ;SHR R10, 4            ; Put bits in low nibble
-    MOD R10, R9            ; Mod by the argument passed by R9
-    RET
-;------------------------------------------- COMENTAR DEVIDAMENTE ATÉ AQUI -----------------------------------------------------
 ; ***************************************************************************
 ; * CHECK GAME OVER -> Checks if game needs to end
 ; * _________________________________________________________________________
@@ -1188,9 +1158,9 @@ check_game_over:
 ; * Arguments:
 ; *     R4 -> new energy increment or decrement
 ; * _________________________________________________________________________
-; * R0 - Sets media options, number of a certain object, Layer, updates
+; * R0 - Sets media options, number of a certain entity, Layer, updates
 ; * R1 - updates, offsets
-; * R2 - Base address of objects
+; * R2 - Base address of entities
 ; * R3 - home x of a probe
 ; * R4 - home y of a probe
 ; ***************************************************************************
@@ -1279,6 +1249,64 @@ reset_game:
         POP R1
         POP R0
         RET
+
+
+; ***************************************************************************
+; * HEX TO DEC -> Returns a converted hexadecimal to decimal (change of base)
+; * Arguments:
+; *     R9 -> Original hexadecimal value
+; * _________________________________________________________________________
+; * Returns:
+; *     R8 -> Converted Value
+; ***************************************************************************
+hex_to_dec:
+    PUSH R1
+    PUSH R2
+    PUSH R3
+    PUSH R9
+
+    MOV R1, 1000           ; Initial factor
+    MOV R2, 10             ; factor lower bound
+
+    MOV R8, 0              ; Initialize final convtered value
+
+    loop_converter:
+        MOD R9, R1         ; R9 is the Value being converted 
+        DIV R1, R2         ; Get next division factor
+
+        CMP R1, 0          ; End loop if 0
+        JZ end_hex_to_dec
+
+        MOV R3, R9         ; Get digit
+        DIV R3, R1
+
+        SHL R8, 4          ; Shift left for new digit
+        OR R8, R3          ; Writes the result
+
+        JMP loop_converter
+
+    end_hex_to_dec:
+    POP R9
+    POP R3
+    POP R2
+    POP R1
+    RET
+
+
+; ***************************************************************************
+; * RNG RANGE -> Generates random value between 0 and N-1 (R9 = N)
+; * Arguments:
+; *     R9 -> Range (N)
+; * _________________________________________________________________________
+; * Returns:
+; *     R10 -> Pseudo-Random Number from (0 ; [R9]-1)
+; * _________________________________________________________________________
+; ***************************************************************************
+rng_range:
+    MOV R10, [PIN_IN]      ; Read bits from "air" (PIN)
+    ;SHR R10, 4            ; Put bits in low nibble
+    MOD R10, R9            ; Mod by the argument passed by R9
+    RET
 
 
 ; ***************************************************************************
