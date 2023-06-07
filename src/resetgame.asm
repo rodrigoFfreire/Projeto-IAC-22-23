@@ -16,7 +16,7 @@ rot_reset_game:
 
     reset_asteroids:
         CMP R0, 0
-        JNZ reset_rest
+        JNZ reset_probes
 
         MOV R2, -1
         MOV [R3 + 8], R2
@@ -28,8 +28,35 @@ rot_reset_game:
         JMP reset_asteroids
 
 
-    reset_rest:
+    ;spaceship
+    MOV R0, [SPACESHIP]
+    MOV R3, SPACESHIP
+    ADD R3, 4
+    MOV R2, 0
+    MOV R3, R2
 
+
+    ;probes
+    MOV R0, [PROBES]
+
+    MOV R3, PROBES
+    ADD R3, 2
+
+    reset_probes:
+        CMP R0, 0
+        JNZ reset_rest
+
+        MOV R2, 0
+        MOV [R3 + 4], R2
+
+        MOV R2, 8
+        ADD R3, R2 
+
+        SUB R0, 1
+        JMP reset_probes
+
+
+    reset_rest:
 
     MOV R2, 100
     MOV [CURRENT_ENERGY], R2
