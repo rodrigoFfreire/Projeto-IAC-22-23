@@ -738,16 +738,16 @@ draw_pixel:
     PUSH R2
     PUSH R3
 
-    MOV R2, [R0]                      ; Current x coord
-    MOV R3, [R0+2]                    ; Current y coord
-    ADD R2, R6                        ; Add x coord + offset for correct column
-    ADD R3, R5                        ; Add y coord + offset for correct line
+    MOV R2, [R0]                     ; Current x coord
+    MOV R3, [R0+2]                   ; Current y coord
+    ADD R2, R6                       ; Add x coord + offset for correct column
+    ADD R3, R5                       ; Add y coord + offset for correct line
     
-    MOV [SET_COLUMN], R2              ; Set pixel column
-    MOV [SET_LINE], R3                ; Set pixel Line
-    MOV R2, [R7]                      ; get color from address of pixel - R7 calculated by check_pixel_adress
+    MOV [SET_COLUMN], R2             ; Set pixel column
+    MOV [SET_LINE], R3               ; Set pixel Line
+    MOV R2, [R7]                     ; get color from address of pixel - R7 calculated by check_pixel_adress
     
-    MOV [SET_PIXEL], R2               ; Draw pixel
+    MOV [SET_PIXEL], R2              ; Draw pixel
 
     POP R3
     POP R2
