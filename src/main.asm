@@ -173,51 +173,51 @@ SPRITE_PROBE:
 ENEMY_SPRITES:
     ;sprite #0
     WORD 5 ; length
-    WORD 7 ; height
+    WORD 5 ; height
 
     WORD SALMON, 0, 0, 0, SALMON
     WORD 0, SALMON, 0, SALMON, 0
     WORD SALMON, SALMON, SALMON, SALMON, SALMON
     WORD SALMON, 0, SALMON, 0, SALMON
     WORD DARKRED, 0, DARKRED, 0, DARKRED
-    WORD DARKRED, DARKRED, DARKRED, DARKRED, DARKRED
-    WORD 0, DARKRED, 0, DARKRED, 0
+    ;WORD DARKRED, DARKRED, DARKRED, DARKRED, DARKRED
+    ;WORD 0, DARKRED, 0, DARKRED, 0
 
     ;sprite #1
     WORD 5 ; length
-    WORD 7 ; height 
+    WORD 5 ; height 
 
     WORD SALMON, 0, 0, 0, SALMON
     WORD 0, SALMON, SALMON, SALMON, 0
     WORD SALMON, 0, SALMON, 0, SALMON
     WORD SALMON,SALMON, SALMON, SALMON, SALMON
     WORD 0, DARKRED, DARKRED, DARKRED, 0
-    WORD DARKRED, DARKRED, 0, DARKRED, DARKRED
-    WORD DARKRED, 0, 0, 0, DARKRED
+    ;WORD DARKRED, DARKRED, 0, DARKRED, DARKRED
+    ;WORD DARKRED, 0, 0, 0, DARKRED
 
     ;sprite #2
     WORD 5 ; length
-    WORD 7 ; height
+    WORD 5 ; height
 
     WORD SALMON, 0, 0, 0, SALMON
     WORD 0, SALMON, SALMON, SALMON, 0
     WORD SALMON, SALMON, SALMON, SALMON, SALMON
     WORD SALMON, 0, SALMON, 0, SALMON
     WORD DARKRED, DARKRED, 0, DARKRED, DARKRED
-    WORD 0, DARKRED, DARKRED, DARKRED, 0
-    WORD DARKRED, 0, 0, 0, DARKRED
+    ;WORD 0, DARKRED, DARKRED, DARKRED, 0
+    ;WORD DARKRED, 0, 0, 0, DARKRED
 
     ; sprite #3 (destruction sprite)
     WORD 5 ; length
-    WORD 7 ; height
+    WORD 5 ; height
 
     WORD 0, LIGHTBLUE, 0, 0, 0
     WORD LIGHTBLUE, BLUE, DARKBLUE, 0, 0
     WORD 0, DARKBLUE, 0, 0, 0
     WORD 0, 0, 0, 0, 0
     WORD 0, 0, 0, LIGHTBLUE, 0
-    WORD 0, 0, LIGHTBLUE, BLUE, DARKBLUE
-    WORD 0, 0, 0, DARKBLUE, 0
+    ;WORD 0, 0, LIGHTBLUE, BLUE, DARKBLUE
+    ;WORD 0, 0, 0, DARKBLUE, 0
 
 
 FRIEND_SPRITES:
@@ -361,10 +361,10 @@ start:
     game_loop:
         CALL keyboard_listner           ; Listen for input
 
+        CALL update_panel
         CALL update_energy_idling
         CALL update_probes
         CALL update_asteroids
-        CALL update_panel
 
         CALL event_handler              ; carrys out keyboard commands
 
@@ -920,11 +920,13 @@ update_probes:
 ; UPDATE ASTEROIDS - Missing colisions
 update_asteroids:
     PUSH R0
+    PUSH R1
     PUSH R2
     PUSH R3
     PUSH R4
     PUSH R5
     PUSH R6
+    PUSH R7
     PUSH R9
     PUSH R10
 
@@ -949,10 +951,35 @@ update_asteroids:
 
         MOV R3, ASTEROID_MAX_STEPS
         CMP R1, R3     ; If 31 (y coord reached bottom screen) then set inactive
-        JLT asteroid_new_coords
+        JLT check_ship_colision
         MOV R3, -1
         MOV [R2+8], R3 ; Set to -1 (not active) to be dealt with next time
         JMP next_iter_asteroids
+
+        check_ship_colision:
+            MOV R3, [R2]    ; Current X
+            MOV R4, [R2+2]  ; Current Y
+
+            MOV R7, 22      ; Hitbox X lower bound
+            CMP R3, R7
+            JLT asteroid_new_coords
+            
+            MOV R7, 38      ; Hitbox X higher bound
+            CMP R3, R7
+            JGT asteroid_new_coords
+            
+            MOV R7, 16      ; Hitbox Y higher bound
+            CMP R4, R7
+            JLT asteroid_new_coords
+
+            MOV R7, 1
+            MOV [GAME_OVER_FLAG], R7
+
+            MOV R7, 2
+            MOV [SET_BACKGROUND], R7
+            MOV [PLAY_AUDIO], R7
+            JMP end_update_asteroids
+
 
         asteroid_new_coords:
             MOV R3, [R2]    ; Current X
@@ -994,11 +1021,13 @@ update_asteroids:
     end_update_asteroids:
         POP R10
         POP R9
+        POP R7
         POP R6
         POP R5
         POP R4
         POP R3
         POP R2
+        POP R1
         POP R0
         RET
 
@@ -1069,6 +1098,8 @@ type_gen:
     JMP end_type_gen
 
     spawn_friend:
+        MOV R0, 0
+        MOV [R2+4], R0           ; Set subsprite to default 0
         MOV R0, FRIEND_SPRITES  ; Set sprite to friend type
     
     end_type_gen:
