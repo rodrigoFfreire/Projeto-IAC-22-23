@@ -119,14 +119,14 @@ ASTEROIDS:
     ;number of asteroids
     WORD 4
 
-    ; (x, y, subsprite_index, sprite address, state/steps, direction (left, up, right))
-    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0
+    ; (x, y, subsprite_index, sprite address, state/steps, direction (left, up, right), breakable)
+    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0, 1
 
-    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0
+    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0, 1
 
-    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0
+    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0, 1
 
-    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0
+    WORD 0, 0, 0, ENEMY_SPRITES, -1, 0, 1
 
 
 SPACESHIP:
@@ -931,12 +931,16 @@ check_asteroid_colision:
 
     MOV R0, [ASTEROIDS]
     MOV R2, ASTEROIDS
-    MOV R1, 12        ; Next asteroid offset
+    MOV R1, 14        ; Next asteroid offset
     ADD R2, 2         ; Get address of first asteroid
 
     check_probe_loop:
         CMP R0, 0
         JZ end_check_probe_colision
+
+        MOV R6, [R2+12]  ; Check if breakable
+        CMP R6, 0
+        JZ check_probe_next_iter
 
         MOV R6, [R2]     ; Asteroid current X
         MOV R7, [R2+2]   ; Asteroid current Y
@@ -970,6 +974,8 @@ check_asteroid_colision:
             MOV [R2+4], R7     ; Set to destruction sprite
 
         set_colision:
+            MOV R7, 0
+            MOV [R2+12], R7   ; Set unbreakable (probe cant interact)
             MOV R10, 1        ; Set colision happened
             JMP end_check_probe_colision
 
@@ -1003,7 +1009,7 @@ update_asteroids:
     CMP R0, 0
     JZ end_update_asteroids
 
-    MOV R6, 12                   ; Next asteroid offset
+    MOV R6, 14                   ; Next asteroid offset
     MOV R0, [ASTEROIDS]          ; Get number of asteroids
     MOV R2, ASTEROIDS
     ADD R2, 2                    ; Store address of first asteroid (offset by 2)
@@ -1105,6 +1111,8 @@ update_asteroids:
             MOV R4, 0
             ; R3 now contains new X coord and R4 contains new Y coord it can now be updated
             MOV R1, -1           ; Set steps to 0 (ready) (We set to -1 to account for the next ADD)
+            MOV R7, 1
+            MOV [R2+12], R7         ; Set breakable again (probe can interact)
 
         move_asteroid:
             ADD R1, 1           ; Steps++
