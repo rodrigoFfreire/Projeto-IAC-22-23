@@ -12,81 +12,84 @@
 ; ***************************************************************************
 
 ; Keyboard
-KEYBOARD_LINE      EQU 0C000H                    ; (POUT-2)
-KEYBOARD_COLUMN    EQU 0E000H                    ; (PIN)
-MASK               EQU 0FH                       ; Get low nibble only
+KEYBOARD_LINE            EQU 0C000H                    ; (POUT-2)
+KEYBOARD_COLUMN          EQU 0E000H                    ; (PIN)
+MASK                     EQU 0FH                       ; Get low nibble only
 
-PIN_IN             EQU 0E000H                    ; (PIN)
+PIN_IN                   EQU 0E000H                    ; (PIN)
 
 ; Energy
-ENERGY_DISPLAYS    EQU 0A000H                    ; (POUT-1)
+ENERGY_DISPLAYS          EQU 0A000H                    ; (POUT-1)
 
-; Screen and Media Commands
-MEDIA_COMMAND	   EQU 6000H                     ; Media center commands
+; Screen and Media C    ommands
+MEDIA_COMMAND	         EQU 6000H                     ; Media center commands
 
-SET_LINE           EQU MEDIA_COMMAND + 0AH
-SET_COLUMN         EQU MEDIA_COMMAND + 0CH
-SET_PIXEL   	   EQU MEDIA_COMMAND + 12H
-SET_BACKGROUND     EQU MEDIA_COMMAND + 42H
-SET_LAYER          EQU MEDIA_COMMAND + 04H
-DELETE_LAYER       EQU MEDIA_COMMAND
-SET_FOREGROUND     EQU MEDIA_COMMAND + 46H
-DELETE_FOREGROUND  EQU MEDIA_COMMAND + 44H
-CLEAR_SCREEN	   EQU MEDIA_COMMAND + 02H
-DELETE_WARNING     EQU MEDIA_COMMAND + 40H
+SET_LINE                 EQU MEDIA_COMMAND + 0AH
+SET_COLUMN               EQU MEDIA_COMMAND + 0CH
+SET_PIXEL   	         EQU MEDIA_COMMAND + 12H
+SET_BACKGROUND           EQU MEDIA_COMMAND + 42H
+SET_LAYER                EQU MEDIA_COMMAND + 04H
+DELETE_LAYER             EQU MEDIA_COMMAND
+SET_FOREGROUND           EQU MEDIA_COMMAND + 46H
+DELETE_FOREGROUND        EQU MEDIA_COMMAND + 44H
+CLEAR_SCREEN	         EQU MEDIA_COMMAND + 02H
+DELETE_WARNING           EQU MEDIA_COMMAND + 40H
 
-PLAY_AUDIO         EQU MEDIA_COMMAND + 5AH
-PLAY_VIDEO_LOOP    EQU MEDIA_COMMAND + 5CH
-PAUSE_VIDEO        EQU MEDIA_COMMAND + 5EH
-RESUME_VIDEO       EQU MEDIA_COMMAND + 60H
-STOP_VIDEO         EQU MEDIA_COMMAND + 66H
+PLAY_AUDIO               EQU MEDIA_COMMAND + 5AH
+PLAY_VIDEO_LOOP          EQU MEDIA_COMMAND + 5CH
+PAUSE_VIDEO              EQU MEDIA_COMMAND + 5EH
+RESUME_VIDEO             EQU MEDIA_COMMAND + 60H
+STOP_VIDEO               EQU MEDIA_COMMAND + 66H
 
 ; Layers
-LAYER_NAVPANEL     EQU 0
-LAYER_SPACESHIP    EQU 1
-LAYER_PROBE_RIGHT  EQU 2
-LAYER_PROBE_UP     EQU 3
-LAYER_PROBE_LEFT   EQU 4
-LAYER_ASTEROID_1   EQU 5
-LAYER_ASTEROID_2   EQU 6
-LAYER_ASTEROID_3   EQU 7
-LAYER_ASTEROID_4   EQU 8
+LAYER_NAVPANEL           EQU 0
+LAYER_SPACESHIP          EQU 1
+LAYER_PROBE_RIGHT        EQU 2
+LAYER_PROBE_UP           EQU 3
+LAYER_PROBE_LEFT         EQU 4
+LAYER_ASTEROID_1         EQU 5
+LAYER_ASTEROID_2         EQU 6
+LAYER_ASTEROID_3         EQU 7
+LAYER_ASTEROID_4         EQU 8
 
 ; Colors
-BLACK              EQU 0F000H
-LIGHTGREY          EQU 0F888H
-GREY               EQU 4888H
-SALMON             EQU 8F10H
-MAGENTA            EQU 0D933H
-DARKRED            EQU 0F900H
-NEONRED            EQU 0FF00H
-NEONGREEN          EQU 0F0F0H	
-DARKGREEN          EQU 0F070H	
-DARKBLUE           EQU 0F04FH
-LIGHTBLUE          EQU 607FH
-BLUE               EQU 903FH
-CYAN               EQU 0F1FFH
-NEONPINK           EQU 0FF0FH
-ORANGE             EQU 0FD60H 
-WHITE              EQU 0FFFFH
-NEONYELLOW         EQU 0FFF0H
-YELLOW             EQU 0FEE0H
+LIGHTGREY                EQU 0F888H
+BLACK                    EQU 0F000H
+GREY                     EQU 4888H
+SALMON                   EQU 8F10H
+MAGENTA                  EQU 0D933H
+DARKRED                  EQU 0F900H
+NEONRED                  EQU 0FF00H
+NEONGREEN                EQU 0F0F0H	
+DARKGREEN                EQU 0F070H	
+DARKBLUE                 EQU 0F04FH
+LIGHTBLUE                EQU 607FH
+BLUE                     EQU 903FH
+CYAN                     EQU 0F1FFH
+NEONPINK                 EQU 0FF0FH
+ORANGE                   EQU 0FD60H 
+WHITE                    EQU 0FFFFH
+NEONYELLOW               EQU 0FFF0H
+YELLOW                   EQU 0FEE0H
 
 ; Keys
-KEY_START_GAME     EQU 0CH
-KEY_PAUSE_GAME     EQU 0DH
-KEY_STOP_GAME      EQU 0EH
-KEY_SHOOT_UP       EQU 1
-KEY_SHOOT_LEFT     EQU 4
-KEY_SHOOT_RIGHT    EQU 6
+KEY_START_GAME           EQU 0CH
+KEY_STOP_GAME            EQU 0EH
+KEY_PAUSE_GAME           EQU 0DH
+KEY_SHOOT_UP             EQU 1
+KEY_SHOOT_RIGHT          EQU 6
+KEY_SHOOT_LEFT           EQU 4
 
 ; other constants
-DIR_LEFT           EQU -1                        ; Direction LEFT
-DIR_UP             EQU 0                         ; Direction UP
-DIR_RIGHT          EQU 1                         ; Direction RIGHT
-PROBE_MAX_STEPS    EQU 11                        ; Probes MaxSteps - 1
-ASTEROID_MAX_STEPS EQU 32                        ; Asteroids MaxSteps (screen height)
-
+DIR_LEFT                 EQU -1                        ; Direction LEFT
+DIR_UP                   EQU 0                         ; Direction UP
+DIR_RIGHT                EQU 1                         ; Direction RIGHT
+PROBE_MAX_STEPS          EQU 11                        ; Probes MaxSteps - 1
+ASTEROID_MAX_STEPS       EQU 31                        ; Asteroids MaxSteps - 1
+SHIP_HITBOX_LOW_X        EQU 22
+SHIP_HITBOX_HIGH_X       EQU 38
+SHIP_HITBOX_HIGH_Y       EQU 16
+ASTEROID_HITBOX_OFFSET   EQU 5                         ; Asteroid side size
 
 ; ***************************************************************************
 ; * DATA
@@ -173,51 +176,39 @@ SPRITE_PROBE:
 ENEMY_SPRITES:
     ;sprite #0
     WORD 5 ; length
-    WORD 5 ; height
-
+    WORD 5 ; height 
     WORD SALMON, 0, 0, 0, SALMON
     WORD 0, SALMON, 0, SALMON, 0
-    WORD SALMON, SALMON, SALMON, SALMON, SALMON
-    WORD SALMON, 0, SALMON, 0, SALMON
+    WORD DARKRED, DARKRED, DARKRED, DARKRED, DARKRED
     WORD DARKRED, 0, DARKRED, 0, DARKRED
-    ;WORD DARKRED, DARKRED, DARKRED, DARKRED, DARKRED
-    ;WORD 0, DARKRED, 0, DARKRED, 0
+    WORD DARKRED, DARKRED, DARKRED, DARKRED, DARKRED
 
     ;sprite #1
     WORD 5 ; length
     WORD 5 ; height 
-
-    WORD SALMON, 0, 0, 0, SALMON
     WORD 0, SALMON, SALMON, SALMON, 0
     WORD SALMON, 0, SALMON, 0, SALMON
-    WORD SALMON,SALMON, SALMON, SALMON, SALMON
-    WORD 0, DARKRED, DARKRED, DARKRED, 0
-    ;WORD DARKRED, DARKRED, 0, DARKRED, DARKRED
-    ;WORD DARKRED, 0, 0, 0, DARKRED
+    WORD DARKRED, DARKRED, 0, DARKRED, DARKRED
+    WORD 0, DARKRED, 0, DARKRED, 0
+    WORD DARKRED, 0, DARKRED, 0, DARKRED
 
     ;sprite #2
     WORD 5 ; length
-    WORD 5 ; height
-
+    WORD 5 ; height 
     WORD SALMON, 0, 0, 0, SALMON
     WORD 0, SALMON, SALMON, SALMON, 0
-    WORD SALMON, SALMON, SALMON, SALMON, SALMON
     WORD SALMON, 0, SALMON, 0, SALMON
-    WORD DARKRED, DARKRED, 0, DARKRED, DARKRED
-    ;WORD 0, DARKRED, DARKRED, DARKRED, 0
-    ;WORD DARKRED, 0, 0, 0, DARKRED
+    WORD DARKRED, DARKRED, DARKRED, DARKRED, DARKRED
+    WORD 0, DARKRED, DARKRED, DARKRED, 0
 
-    ; sprite #3 (destruction sprite)
+    ;desctruction sprite
     WORD 5 ; length
-    WORD 5 ; height
-
+    WORD 5 ; height 
     WORD 0, LIGHTBLUE, 0, 0, 0
     WORD LIGHTBLUE, BLUE, DARKBLUE, 0, 0
-    WORD 0, DARKBLUE, 0, 0, 0
-    WORD 0, 0, 0, 0, 0
-    WORD 0, 0, 0, LIGHTBLUE, 0
-    ;WORD 0, 0, LIGHTBLUE, BLUE, DARKBLUE
-    ;WORD 0, 0, 0, DARKBLUE, 0
+    WORD 0, DARKBLUE, 0, LIGHTBLUE, 0
+    WORD 0, 0, LIGHTBLUE, BLUE, DARKBLUE
+    WORD 0, 0, 0, DARKBLUE, 0
 
 
 FRIEND_SPRITES:
@@ -229,7 +220,7 @@ FRIEND_SPRITES:
     WORD DARKGREEN, NEONGREEN, NEONGREEN, NEONGREEN, DARKGREEN
     WORD DARKGREEN, NEONGREEN, NEONGREEN, NEONGREEN, DARKGREEN
     WORD DARKGREEN, NEONGREEN, NEONGREEN, NEONGREEN, DARKGREEN
-    WORD 0, DARKGREEN, DARKGREEN, DARKGREEN, 0    
+    WORD 0, DARKGREEN, DARKGREEN, DARKGREEN, 0
 
     ;first sprite after destruction
     WORD 5 ; length
@@ -363,8 +354,8 @@ start:
 
         CALL update_panel
         CALL update_energy_idling
-        CALL update_probes
         CALL update_asteroids
+        CALL update_probes
 
         CALL event_handler              ; carrys out keyboard commands
 
@@ -503,6 +494,7 @@ event_handler:
     PUSH R2
     PUSH R3
     PUSH R4
+    PUSH R8
 
     MOV R0, [EXECUTE_COMMAND]  ; Read execute command flag
     CMP R0, 1
@@ -532,6 +524,7 @@ event_handler:
     JZ game_stop
 
     end_event_handler:
+        POP R8
         POP R4
         POP R3
         POP R2
@@ -580,7 +573,7 @@ event_handler:
         MOV [R2+4], R3                 ; Set sprite index to 0 (visible)
         CALL draw_entity               ; Draw entity reads R2 to draw the probe
 
-        MOV R4, -5 
+        MOV R8, -5 
         CALL energy_value_update       ; Probe spends energy (-5%)
 
         MOV R3, 6
@@ -785,19 +778,19 @@ check_pixel_address:
 ; ***************************************************************************
 update_energy_idling:
     PUSH R0
-    PUSH R4
+    PUSH R8
 
     MOV R0, [ENERGY_UPDATE_FLAG]        ; Get energy_update flag
     CMP R0, 0
     JZ end_update_energy_idling         ; If 0 means dont update
 
-    MOV R4, -3
+    MOV R8, -3
     CALL energy_value_update            ; Update energy (-3%)
     MOV R0, 0
     MOV [ENERGY_UPDATE_FLAG], R0        ; Reset update flag
 
     end_update_energy_idling:
-        POP R4
+        POP R8
         POP R0
         RET
 
@@ -850,6 +843,7 @@ update_probes:
     PUSH R4
     PUSH R5
     PUSH R6 ; offsets
+    PUSH R7
 
     MOV R6, 16                          ; Next probe offset
     MOV R0, [PROBES_UPDATE_FLAG]        ; Get update flag
@@ -866,18 +860,28 @@ update_probes:
         CMP R0, 0
         JZ end_update_loop              ; End loop when all probes were checked
 
+
         MOV R1, [R2+8]                  ; Get amount of steps
         CMP R1, -1                      ; If -1 (not active) then skip update
         JZ next_iter_probes
 
-        MOV R3, PROBE_MAX_STEPS
-        CMP R1, R3                      ; If 12 (12 steps were taken) then move home
+        MOV R7, PROBE_MAX_STEPS
+        CMP R1, R7                      ; If 12 (12 steps were taken) then move home
         JZ move_probe_home
 
-        MOV R3, [R2]                    ; Current X
-        MOV R4, [R2+10]                 ; Direction (-1, 0, 1 -> left, up, right)
-        ADD R3, R4
-        MOV R4, [R2+2]                  ; Current Y
+        asteroid_colision:
+            MOV R3, [R2]                    ; Current X
+            MOV R4, [R2+2]                  ; Current Y
+
+            MOV R10, 0
+            CALL check_asteroid_colision
+
+            CMP R10, 1
+            JZ move_probe_home
+
+
+        MOV R7, [R2+10]                 ; Direction (-1, 0, 1 -> left, up, right)
+        ADD R3, R7
         SUB R4, 1                       ; Move 1 up
         JMP move_probe                  ; After gathering new coordinates goto move_probe
 
@@ -907,6 +911,7 @@ update_probes:
         MOV [PROBES_UPDATE_FLAG], R0    ; Disable probe update flag
 
     end_update_probes:
+        POP R7
         POP R6
         POP R5
         POP R4
@@ -916,6 +921,70 @@ update_probes:
         POP R0
         RET
 
+; Reads from R3, R4 -> Sets R10 to 1 if colision
+check_asteroid_colision:
+    PUSH R0
+    PUSH R1
+    PUSH R2
+    PUSH R6
+    PUSH R7
+
+    MOV R0, [ASTEROIDS]
+    MOV R2, ASTEROIDS
+    MOV R1, 12        ; Next asteroid offset
+    ADD R2, 2         ; Get address of first asteroid
+
+    check_probe_loop:
+        CMP R0, 0
+        JZ end_check_probe_colision
+
+        MOV R6, [R2]     ; Asteroid current X
+        MOV R7, [R2+2]   ; Asteroid current Y
+
+        CMP R3, R6
+        JLT check_probe_next_iter
+
+        ADD R6, ASTEROID_HITBOX_OFFSET
+        CMP R3, R6
+        JGT check_probe_next_iter
+
+        CMP R4, R7
+        JLT check_probe_next_iter
+
+        ADD R7, ASTEROID_HITBOX_OFFSET
+        CMP R4, R7
+        JGT check_probe_next_iter
+
+        MOV R7, [R2+6]     ; Get current sprite (enemy/friend)
+        MOV R6, ENEMY_SPRITES
+        CMP R6, R7
+        JZ colision_enemy
+
+        colision_friend:
+            MOV R7, -1
+            MOV [R2+4], R7     ; Set to -1 means asteroid was mined and needs to update sprite animation
+            JMP set_colision
+
+        colision_enemy:
+            MOV R7, 3
+            MOV [R2+4], R7     ; Set to destruction sprite
+
+        set_colision:
+            MOV R10, 1        ; Set colision happened
+            JMP end_check_probe_colision
+
+        check_probe_next_iter:
+            SUB R0, 1
+            ADD R2, R1
+            JMP check_probe_loop
+
+    end_check_probe_colision:
+        POP R7
+        POP R6
+        POP R2
+        POP R1
+        POP R0
+        RET
 
 ; UPDATE ASTEROIDS - Missing colisions
 update_asteroids:
@@ -945,30 +1014,44 @@ update_asteroids:
         CMP R0, 0
         JZ end_update_asteroids_loop
 
+        MOV R3, [R2]    ; Current X
+        MOV R4, [R2+2]  ; Current Y
+
         MOV R1, [R2+8] ; Get amount of steps
         CMP R1, -1     ; If -1 (not active) then regenerate asteroid
         JZ regen_asteroid
 
-        MOV R3, ASTEROID_MAX_STEPS
-        CMP R1, R3     ; If 31 (y coord reached bottom screen) then set inactive
-        JLT check_ship_colision
-        MOV R3, -1
-        MOV [R2+8], R3 ; Set to -1 (not active) to be dealt with next time
-        JMP next_iter_asteroids
+        MOV R7, [R2+6] ; Get sprite (enemy/friend)
+        MOV R9, FRIEND_SPRITES
+        CMP R7, R9
+        JNZ skip_mine_energy
 
-        check_ship_colision:
-            MOV R3, [R2]    ; Current X
-            MOV R4, [R2+2]  ; Current Y
+        MOV R7, [R2+4]
+        CMP R7, -1
+        JZ mine_energy_first_time
+        CMP R7, 1
+        JGE mine_energy
 
-            MOV R7, 22      ; Hitbox X lower bound
+        skip_mine_energy:
+            MOV R7, [R2+4] ; Get subsprite
+            CMP R7, 3      ; If subsprite is the destruction sprite then create explosion
+            JZ create_explosion
+
+            MOV R7, ASTEROID_MAX_STEPS
+            CMP R1, R7     ; If 31 (y coord reached bottom screen) then set inactive
+            JZ regen_asteroid
+
+
+        ship_colision:
+            MOV R7, SHIP_HITBOX_LOW_X       ; Hitbox X lower bound
             CMP R3, R7
             JLT asteroid_new_coords
             
-            MOV R7, 38      ; Hitbox X higher bound
+            MOV R7, SHIP_HITBOX_HIGH_X      ; Hitbox X higher bound
             CMP R3, R7
             JGT asteroid_new_coords
             
-            MOV R7, 16      ; Hitbox Y higher bound
+            MOV R7, SHIP_HITBOX_HIGH_Y      ; Hitbox Y higher bound
             CMP R4, R7
             JLT asteroid_new_coords
 
@@ -980,13 +1063,34 @@ update_asteroids:
             MOV [PLAY_AUDIO], R7
             JMP end_update_asteroids
 
+        mine_energy_first_time:
+            MOV R7, 4
+            MOV [PLAY_AUDIO], R7
+            MOV R7, 1
+            MOV [R2+4], R7
+            MOV R8, 25
+            CALL energy_value_update
+            JMP move_asteroid
+        mine_energy:
+            ADD R7, 1
+            CMP R7, 4
+            JZ regen_asteroid
 
+            MOV [R2+4], R7
+            JMP move_asteroid
+
+
+        create_explosion:
+            MOV R7, 2
+            MOV [PLAY_AUDIO], R7
+            MOV R1, -2
+            JMP move_asteroid
+
+            
         asteroid_new_coords:
-            MOV R3, [R2]    ; Current X
-            MOV R4, [R2+10] ; Direction (-1, 0, 1 -> left, up, right)
-            ADD R3, R4
-            MOV R4, [R2+2]  ; Current Y
-            ADD R4, 1       ; Move 1 down
+            MOV R7, [R2+10] ; Direction (-1, 0, 1 -> left, up, right)
+            ADD R3, R7      ; Change X coord
+            ADD R4, 1       ; Move 1 down (Change y coord)
             JMP move_asteroid
 
         regen_asteroid:
@@ -1112,7 +1216,7 @@ type_gen:
 ; ***************************************************************************
 ; * ENERGY_VALUE_UPDATE -> Increments or decrements energy
 ; * Arguments:
-; *     R4 -> new energy increment or decrement
+; *     R8 -> new energy increment or decrement
 ; * _________________________________________________________________________
 ; * R8 - Converted energy for displays, sets media options and flags
 ; * R9 - New current energy
@@ -1123,7 +1227,7 @@ energy_value_update:
 
     ; Get current energy, add value of R4 (can be negative) and update memory
     MOV R9, [CURRENT_ENERGY]
-    ADD R9, R4
+    ADD R9, R8
     MOV [CURRENT_ENERGY], R9
 
     CALL hex_to_dec                     ; Reads from R9 and converted output gets written on R8
