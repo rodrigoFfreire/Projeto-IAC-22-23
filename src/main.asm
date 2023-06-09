@@ -603,6 +603,10 @@ event_handler:
             JNZ pause_loop
 
             MOV R0, [LAST_PRESSED_KEY]
+            MOV R1, KEY_STOP_GAME
+            CMP R0, R1
+            JZ game_stop
+
             MOV R1, KEY_PAUSE_GAME
             CMP R0, R1
             JNZ pause_loop
@@ -618,6 +622,8 @@ event_handler:
         JMP end_event_handler
 
     game_stop:
+        MOV [DELETE_FOREGROUND], R4    ; Delete foreground
+
         MOV R3, 7
         MOV [STOP_MEDIA], R3           ; Stop main theme
 
@@ -1413,16 +1419,16 @@ reset_game:
 
 
     reset_rest:
-        MOV R0, 100
-        MOV [CURRENT_ENERGY], R0        ; Reset current enery to 100
+        MOV R0, 7
+        MOV [PLAY_MEDIA_LOOP], R0       ; Start main theme
+
         MOV R0, 100H
         MOV [ENERGY_DISPLAYS], R0       ; Update energy display
+        MOV R0, 100
+        MOV [CURRENT_ENERGY], R0        ; Reset current enery to 100
 
         MOV R0, 0
         MOV [PLAY_MEDIA_LOOP], R0       ; Start background video stars.mp4 (index 0)
-
-        MOV R0, 7
-        MOV [PLAY_MEDIA_LOOP], R0       ; Start main theme
 
         ; Disable exception flags (R0 = 0)
         MOV [ASTEROIDS_UPDATE_FLAG], R0

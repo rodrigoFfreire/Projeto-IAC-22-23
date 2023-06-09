@@ -1529,8 +1529,8 @@
     "positionX" : 810,
     "positionY" : 296,
     "simGuiVisibleInSimulation" : true,
-    "simGuiXRelative" : 526,
-    "simGuiYRelative" : 119,
+    "simGuiXRelative" : 232,
+    "simGuiYRelative" : 135,
     "simGuiWidth" : 1024,
     "simGuiHeight" : 512,
     "columnAddressNBits" : 6,
@@ -1559,7 +1559,7 @@
       "playAsClip" : false
     }, {
       "filePathName" : "assets/sounds/intro.mp3",
-      "relative sound volume" : 0.8,
+      "relative sound volume" : 1.0,
       "relative start time" : 0.0,
       "relative stop time" : 1.0,
       "playAsClip" : false
@@ -1583,7 +1583,7 @@
       "playAsClip" : false
     }, {
       "filePathName" : "assets/sounds/main_theme.mp3",
-      "relative sound volume" : 1.0,
+      "relative sound volume" : 0.75,
       "relative start time" : 0.0,
       "relative stop time" : 1.0,
       "playAsClip" : false
