@@ -35,11 +35,11 @@ DELETE_FOREGROUND        EQU MEDIA_COMMAND + 44H
 CLEAR_SCREEN	         EQU MEDIA_COMMAND + 02H
 DELETE_WARNING           EQU MEDIA_COMMAND + 40H
 
-PLAY_AUDIO               EQU MEDIA_COMMAND + 5AH
-PLAY_VIDEO_LOOP          EQU MEDIA_COMMAND + 5CH
-PAUSE_VIDEO              EQU MEDIA_COMMAND + 5EH
-RESUME_VIDEO             EQU MEDIA_COMMAND + 60H
-STOP_VIDEO               EQU MEDIA_COMMAND + 66H
+PLAY_MEDIA               EQU MEDIA_COMMAND + 5AH
+PLAY_MEDIA_LOOP          EQU MEDIA_COMMAND + 5CH
+PAUSE_MEDIA              EQU MEDIA_COMMAND + 5EH
+RESUME_MEDIA             EQU MEDIA_COMMAND + 60H
+STOP_MEDIA               EQU MEDIA_COMMAND + 66H
 
 ; Layers
 LAYER_NAVPANEL           EQU 0
@@ -367,12 +367,18 @@ start:
         PUSH R0
         PUSH R1
 
+        MOV R0, 3
+        MOV [PLAY_MEDIA_LOOP], R0
+
         loop_main_menu:
             CALL keyboard_listner
             MOV R0, [LAST_PRESSED_KEY] ; Get last pressed key
             MOV R1, KEY_START_GAME
             CMP R0, R1
             JNZ loop_main_menu         ; If correct key then end loop to start game
+
+        MOV R0, 3
+        MOV [STOP_MEDIA], R0
 
         POP R0
         POP R1
@@ -575,17 +581,20 @@ event_handler:
         CALL energy_value_update       ; Probe spends energy (-5%)
 
         MOV R3, 6
-        MOV [PLAY_AUDIO], R3           ; Play shoot.wav
+        MOV [PLAY_MEDIA], R3           ; Play shoot.wav
         
         JMP end_event_handler
 
     game_pause:
         MOV R3, 0
-        MOV [PAUSE_VIDEO], R3          ; Pause stars.mp4
+        MOV [PAUSE_MEDIA], R3          ; Pause stars.mp4
+
+        MOV R3, 7
+        MOV [PAUSE_MEDIA], R3          ; Pause main theme
 
         MOV R4, 1
         MOV [SET_FOREGROUND], R4       ; Set foreground as paused_overlay.png (index 1)
-        MOV [PLAY_AUDIO], R4           ; Play beep sound effect (index 1)
+        MOV [PLAY_MEDIA], R4           ; Play beep sound effect (index 1)
 
         pause_loop:                    ; Loops until pause/resume key hasnt been pressed
             CALL keyboard_listner
@@ -598,21 +607,28 @@ event_handler:
             CMP R0, R1
             JNZ pause_loop
 
-        MOV [PLAY_AUDIO], R4           ; Play beep sound effect (index 1)
+        MOV [PLAY_MEDIA], R4           ; Play beep sound effect (index 1)
         MOV [DELETE_FOREGROUND], R4    ; Delete foreground
-        MOV [RESUME_VIDEO], R3         ; Resume stars.mp4
+
+        MOV [RESUME_MEDIA], R3         ; Resume main_theme
+        MOV R3, 0
+        MOV [RESUME_MEDIA], R3         ; Resume stars.mp4
+
 
         JMP end_event_handler
 
     game_stop:
+        MOV R3, 7
+        MOV [STOP_MEDIA], R3           ; Stop main theme
+
         MOV R3, 5
-        MOV [PLAY_AUDIO], R3           ; Play game over sound effect
+        MOV [PLAY_MEDIA], R3           ; Play game over sound effect
 
         MOV R3, 4
         MOV [SET_BACKGROUND], R3       ; Set game_over.png
         
         MOV R3, 0
-        MOV [STOP_VIDEO], R3           ; Stops stars.mp4 video
+        MOV [STOP_MEDIA], R3           ; Stops stars.mp4 video
 
         MOV [CLEAR_SCREEN], R3         ; Clears screen
 
@@ -1084,12 +1100,12 @@ update_asteroids:
 
             MOV R7, 2
             MOV [SET_BACKGROUND], R7
-            MOV [PLAY_AUDIO], R7
+            MOV [PLAY_MEDIA], R7
             JMP end_update_asteroids
 
         mine_energy_first_time:
             MOV R7, 4
-            MOV [PLAY_AUDIO], R7
+            MOV [PLAY_MEDIA], R7
             MOV R7, 1
             MOV [R2+4], R7
             MOV R8, 25
@@ -1106,7 +1122,7 @@ update_asteroids:
 
         create_explosion:
             MOV R7, 2
-            MOV [PLAY_AUDIO], R7
+            MOV [PLAY_MEDIA], R7
             MOV R1, -2
             JMP move_asteroid
 
@@ -1291,11 +1307,14 @@ check_game_over:
     CMP R0, 1
     JNZ end_check_game_over       ; Checks if flag is on (if not dont end game)
 
+    MOV R0, 7
+    MOV [STOP_MEDIA], R0          ; Stop main theme 
+
     MOV R0, 5
-    MOV [PLAY_AUDIO], R0          ; Play game_over.wav (index 5)
+    MOV [PLAY_MEDIA], R0          ; Play game_over.wav (index 5)
 
     MOV R0, 0
-    MOV [STOP_VIDEO], R0          ; Stop stars.mp4
+    MOV [STOP_MEDIA], R0          ; Stop stars.mp4
     MOV [CLEAR_SCREEN], R0        ; Clears screen
 
     ; Loops until the start key is pressed
@@ -1341,7 +1360,7 @@ reset_game:
 
     MOV [CLEAR_SCREEN], R0              ; Clear screen
     MOV R0, 1
-    MOV [PLAY_AUDIO], R0                ; Play beep sound effect (index 1)
+    MOV [PLAY_MEDIA], R0                ; Play beep sound effect (index 1)
 
     MOV R0, [ASTEROIDS]                 ; Get number of asteroids
     MOV R2, ASTEROIDS
@@ -1400,7 +1419,10 @@ reset_game:
         MOV [ENERGY_DISPLAYS], R0       ; Update energy display
 
         MOV R0, 0
-        MOV [PLAY_VIDEO_LOOP], R0       ; Start background video stars.mp4 (index 0)
+        MOV [PLAY_MEDIA_LOOP], R0       ; Start background video stars.mp4 (index 0)
+
+        MOV R0, 7
+        MOV [PLAY_MEDIA_LOOP], R0       ; Start main theme
 
         ; Disable exception flags (R0 = 0)
         MOV [ASTEROIDS_UPDATE_FLAG], R0
