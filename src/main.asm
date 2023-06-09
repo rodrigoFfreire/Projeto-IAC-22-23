@@ -378,7 +378,6 @@ start:
         POP R1
         RET
 
-
 ; ***************************************************************************
 ; * KEYBOARD LISTNER -> Listens to keyboard input
 ; * _________________________________________________________________________
@@ -478,7 +477,6 @@ convert_to_key_aux:
 
     RET
 
-
 ; ***************************************************************************
 ; * EVENT_HANDLER -> handles keyboard events
 ; * _________________________________________________________________________
@@ -486,7 +484,7 @@ convert_to_key_aux:
 ; * R1 - Key ID for each event
 ; * R2 - Base address of entities
 ; * R3 - Offsets, sets media options, entity properties
-; * R4 - Layer Values, sets media options
+; * R4 - Pixel Layer IDs, sets media options
 ; ***************************************************************************
 event_handler:
     PUSH R0
@@ -632,14 +630,13 @@ event_handler:
         CALL reset_game                ; Resets the game
         JMP end_event_handler
 
-
 ; ***************************************************************************
 ; * UPDATE_entity -> Updates entities position and subsprite
 ; * Arguments
 ; *     - R2 -> Base address of entity
 ; *     - R3 -> New x coordinate
 ; *     - R4 -> New y coordinate
-; *     - R5 -> Layer ID
+; *     - R5 -> Pixel Layer ID
 ; * _________________________________________________________________________
 ; * R0 - Checks subsprite_index of entity 
 ; ***************************************************************************
@@ -660,7 +657,6 @@ update_entity:
     end_update_entity:
         POP R0
         RET
-
 
 ; ***************************************************************************
 ; * DRAW ENTITY -> Draws an entity
@@ -769,7 +765,6 @@ check_pixel_address:
     POP R0
     RET
 
-
 ; ***************************************************************************
 ; * UPDATE_ENERGY_IDLING -> Updates energy while ship idling
 ; * _________________________________________________________________________
@@ -794,11 +789,10 @@ update_energy_idling:
         POP R0
         RET
 
-
 ; ***************************************************************************
 ; * UPDATE_PANEL -> Animates spaceship panel
 ; * _________________________________________________________________________
-; * R0 - flags, updates, layer, other values
+; * R0 - flags, updates, Pixel layer ID, other values
 ; * R2 - Base address of spaceship panel
 ; ***************************************************************************
 update_panel:
@@ -833,8 +827,19 @@ update_panel:
         POP R0
         RET
 
-; ------------------------------------------- FALTA COMENTAR DEVIDAMENTE A PARTIR DAQUI -----------------------------------------------------
-; UPDATE PROBES - Missing colision detection
+; ***************************************************************************
+; * UPDATE_PROBES -> Updates movement, checks colisions, rendering
+; * _________________________________________________________________________
+; * R0 - Probes update flag, number of probes
+; * R1 - Number of steps of a probe
+; * R2 - Base address of Probes
+; * R3 - Probe Current X
+; * R4 - Probe Current Y
+; * R5 - Pixel Layer ID
+; * R6 - Next probe memory offset
+; * R7 - Used to Compare some values
+; * R10 - Colision Flag
+; ***************************************************************************
 update_probes:
     PUSH R0
     PUSH R1
@@ -842,75 +847,74 @@ update_probes:
     PUSH R3
     PUSH R4
     PUSH R5
-    PUSH R6 ; offsets
+    PUSH R6
     PUSH R7
+    PUSH R10
 
-    MOV R6, 16                          ; Next probe offset
-    MOV R0, [PROBES_UPDATE_FLAG]        ; Get update flag
+    MOV R6, 16                              ; Next probe offset
+    MOV R0, [PROBES_UPDATE_FLAG]            ; Get update flag
     CMP R0, 0
-    JZ end_update_probes                ; Skip update if flag is 0
+    JZ end_update_probes                    ; Skip update if flag is 0
 
-    MOV R0, [PROBES]                    ; Get number of probes
+    MOV R0, [PROBES]                        ; Get number of probes
     MOV R2, PROBES
-    ADD R2, 2                           ; Store address of first probe (offset by 2)
+    ADD R2, 2                               ; Store address of first probe (offset by 2)
     MOV R5, R0
-    ADD R5, 1                           ; 3 probes -> layers (2, 3, 4) so add 1 to account for that
+    ADD R5, 1                               ; 3 probes -> layers (2, 3, 4) so add 1 to account for that
 
     update_probes_loop:
         CMP R0, 0
-        JZ end_update_loop              ; End loop when all probes were checked
+        JZ end_update_loop                  ; End loop when all probes were checked
 
-
-        MOV R1, [R2+8]                  ; Get amount of steps
-        CMP R1, -1                      ; If -1 (not active) then skip update
-        JZ next_iter_probes
+        MOV R1, [R2+8]                      ; Get amount of steps
+        CMP R1, -1
+        JZ next_iter_probes                 ; If -1 (not active) then skip update
 
         MOV R7, PROBE_MAX_STEPS
-        CMP R1, R7                      ; If 12 (12 steps were taken) then move home
+        CMP R1, R7                          ; If 12 (12 steps were taken) then move home
         JZ move_probe_home
 
         asteroid_colision:
             MOV R3, [R2]                    ; Current X
             MOV R4, [R2+2]                  ; Current Y
 
-            MOV R10, 0
-            CALL check_asteroid_colision
+            MOV R10, 0                      ; Sets colision flag to 0 (disabled)
+            CALL check_asteroid_colision    ; Checks if probe colided with an asteroid (R10 = 1 if colided)
 
-            CMP R10, 1
-            JZ move_probe_home
+            CMP R10, 1           
+            JZ move_probe_home              ; If there was a colision reset that probe
 
-
-        MOV R7, [R2+10]                 ; Direction (-1, 0, 1 -> left, up, right)
-        ADD R3, R7
-        SUB R4, 1                       ; Move 1 up
-        JMP move_probe                  ; After gathering new coordinates goto move_probe
+        MOV R7, [R2+10]                     ; Get Direction (-1, 0, 1 -> left, up, right)
+        ADD R3, R7                          ; Update new X coordinate
+        SUB R4, 1                           ; Move 1 up
+        JMP move_probe                      ; After gathering new coordinates goto move_probe
 
         move_probe_home:
-            MOV R3, [R2+12]             ; Get homeX
-            MOV R4, [R2+14]             ; Get homeY
+            MOV R3, [R2+12]                 ; Get homeX
+            MOV R4, [R2+14]                 ; Get homeY
 
-            MOV R1, -1
-            MOV [R2+4], R1              ; Set sprite index to -1 (invisible)
-            MOV R1, -2                  ; Set to not active (account for next add -2 + 1 = -1)
+            MOV R7, -1
+            MOV [R2+4], R7                  ; Set sprite index to -1 (invisible)
+            MOV R1, -2                      ; Set steps to -1 (not active) (-2 to account for ADD in move_probe)
 
         move_probe:
-            ADD R1, 1                   ; Steps++
-            MOV [R2+8], R1              ; Update steps in memory 
-            MOV [SET_LAYER], R5         ; Get correct layer
-            CALL update_entity
+            ADD R1, 1                       ; Steps++
+            MOV [R2+8], R1                  ; Update steps in memory 
+            MOV [SET_LAYER], R5             ; Set correct layer
+            CALL update_entity              ; Renders probe
 
         next_iter_probes:
-            SUB R5, 1                   ; Next probe layer
-            ADD R2, R6                  ; Offset by 16 to get address of next probe
-            SUB R0, 1                   ; Decrement iterator (number of probes)
+            SUB R5, 1                       ; Next probe layer
+            ADD R2, R6                      ; Offset by 16 to get address of next probe
+            SUB R0, 1                       ; Decrement iterator (number of probes)
             JMP update_probes_loop
-
 
     end_update_loop:
         MOV R0, 0
-        MOV [PROBES_UPDATE_FLAG], R0    ; Disable probe update flag
+        MOV [PROBES_UPDATE_FLAG], R0        ; Disable probe update flag
 
     end_update_probes:
+        POP R10
         POP R7
         POP R6
         POP R5
@@ -921,7 +925,19 @@ update_probes:
         POP R0
         RET
 
-; Reads from R3, R4 -> Sets R10 to 1 if colision
+; ***************************************************************************
+; * CHECK ASTEROID COLISION -> Checks if probe colided with an asteroid
+; * Arguments:
+; *     - R3 -> Current probe X ; - R4 -> Current probe Y
+; * Returns:
+; *     - R10 -> Colision flag
+; * _________________________________________________________________________
+; * R0 - number of asteroids
+; * R1 - Next asteroid offset
+; * R2 - Base address of Asteroids
+; * R6 - Asteroid current X
+; * R7 - Asteroid current Y, sets entity properties
+; ***************************************************************************
 check_asteroid_colision:
     PUSH R0
     PUSH R1
@@ -929,59 +945,60 @@ check_asteroid_colision:
     PUSH R6
     PUSH R7
 
-    MOV R0, [ASTEROIDS]
+    MOV R0, [ASTEROIDS]                  ; Get number of asteroids
     MOV R2, ASTEROIDS
-    MOV R1, 14        ; Next asteroid offset
-    ADD R2, 2         ; Get address of first asteroid
+    ADD R2, 2                            ; Get address of first asteroid (offset by 2)
+    MOV R1, 14                           ; Next asteroid offset
 
     check_probe_loop:
         CMP R0, 0
-        JZ end_check_probe_colision
+        JZ end_check_probe_colision      ; Check if all asteroids have been checked
 
-        MOV R6, [R2+12]  ; Check if breakable
+        MOV R6, [R2+12]                  ; Get asteroid breakable flag (breakable = not explosion)
         CMP R6, 0
-        JZ check_probe_next_iter
+        JZ check_probe_next_iter         ; Check if asteroid is breakable if not check next iteration
 
-        MOV R6, [R2]     ; Asteroid current X
-        MOV R7, [R2+2]   ; Asteroid current Y
+        MOV R6, [R2]                     ; Asteroid current X
+        MOV R7, [R2+2]                   ; Asteroid current Y
 
+        CMP R3, R6                       ; R3 = Probe Current X
+        JLT check_probe_next_iter        ; Check asteroid hitbox lower X bound
+
+        ADD R6, ASTEROID_HITBOX_OFFSET   ; Add hitbox offset (size of asteroid)
         CMP R3, R6
-        JLT check_probe_next_iter
+        JGT check_probe_next_iter        ; Check asteroid hitbox higher X bound
 
-        ADD R6, ASTEROID_HITBOX_OFFSET
-        CMP R3, R6
-        JGT check_probe_next_iter
+        CMP R4, R7                       ; R4 = Probe Current Y
+        JLT check_probe_next_iter        ; Check asteroid hitbox higher Y bound
 
+        ADD R7, ASTEROID_HITBOX_OFFSET   ; Add hitbox offset
         CMP R4, R7
-        JLT check_probe_next_iter
+        JGT check_probe_next_iter        ; Check asteroid hitbox lower Y bound
 
-        ADD R7, ASTEROID_HITBOX_OFFSET
-        CMP R4, R7
-        JGT check_probe_next_iter
-
-        MOV R7, [R2+6]     ; Get current sprite (enemy/friend)
+        ; If flow reaches here than probe was inside hitbox
+        MOV R7, [R2+6]                   ; Get current sprite (enemy/friend)
         MOV R6, ENEMY_SPRITES
-        CMP R6, R7
+        CMP R6, R7                       ; Check if asteroid is enemy or friend
         JZ colision_enemy
 
         colision_friend:
             MOV R7, -1
-            MOV [R2+4], R7     ; Set to -1 means asteroid was mined and needs to update sprite animation
+            MOV [R2+4], R7               ; Set to -1 means asteroid was mined and needs to update sprite animation
             JMP set_colision
 
         colision_enemy:
             MOV R7, 3
-            MOV [R2+4], R7     ; Set to destruction sprite
+            MOV [R2+4], R7               ; Set to enemy explosion sprite
 
         set_colision:
             MOV R7, 0
-            MOV [R2+12], R7   ; Set unbreakable (probe cant interact)
-            MOV R10, 1        ; Set colision happened
-            JMP end_check_probe_colision
+            MOV [R2+12], R7              ; Set unbreakable (probe cant interact with explosion)
+            MOV R10, 1                   ; Set colision happened
+            JMP end_check_probe_colision ; End loop due to colision
 
         check_probe_next_iter:
-            SUB R0, 1
-            ADD R2, R1
+            SUB R0, 1                    ; Decrement iterator   
+            ADD R2, R1                   ; Get next asteroid adress
             JMP check_probe_loop
 
     end_check_probe_colision:
@@ -992,6 +1009,7 @@ check_asteroid_colision:
         POP R0
         RET
 
+; ------------------------------------------- FALTA COMENTAR DEVIDAMENTE A PARTIR DAQUI -----------------------------------------------------
 ; UPDATE ASTEROIDS - Missing colisions
 update_asteroids:
     PUSH R0
@@ -1301,6 +1319,7 @@ check_game_over:
         POP R1
         POP R0
         RET
+
 
 ; ***************************************************************************
 ; * RESET GAME -> Resets the game and put everything ready to restart
