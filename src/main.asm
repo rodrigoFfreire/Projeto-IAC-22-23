@@ -84,12 +84,18 @@ KEY_SHOOT_LEFT           EQU 4
 DIR_LEFT                 EQU -1                        ; Direction LEFT
 DIR_UP                   EQU 0                         ; Direction UP
 DIR_RIGHT                EQU 1                         ; Direction RIGHT
+
 PROBE_MAX_STEPS          EQU 11                        ; Probes MaxSteps - 1
 ASTEROID_MAX_STEPS       EQU 31                        ; Asteroids MaxSteps - 1
+
 SHIP_HITBOX_LOW_X        EQU 22
 SHIP_HITBOX_HIGH_X       EQU 38
 SHIP_HITBOX_HIGH_Y       EQU 16
 ASTEROID_HITBOX_OFFSET   EQU 5                         ; Asteroid side size
+
+ENERGY_GAIN              EQU 25
+ENERGY_SPEND             EQU -5
+ENERGY_SPEND_IDLE        EQU -3
 
 ; ***************************************************************************
 ; * DATA
@@ -333,21 +339,15 @@ initialize:
     MOV [DELETE_WARNING], R1           ; Clear warnings
     MOV [CLEAR_SCREEN], R1             ; Clear Screen
 
-    ; Set background to main_menu.png (index 0)
-    MOV R1, 0
-    MOV [SET_BACKGROUND], R1
-
-
-start:
-    CALL main_menu                      ; Start main menu 
-
-    CALL reset_game                     ; Reset/Initialize everything correctly
-
     EI0
     EI1
     EI2
     EI3
     EI                                  ; Activate all interrupts
+
+
+start:
+    CALL reset_game                     ; Reset/Initialize everything correctly + Main menu call 
 
     game_loop:
         CALL keyboard_listner           ; Listen for input
@@ -367,18 +367,28 @@ start:
         PUSH R0
         PUSH R1
 
-        MOV R0, 3
-        MOV [PLAY_MEDIA_LOOP], R0
+        MOV R0, 0
+        MOV [SET_BACKGROUND], R0         ; Set to main_menu.png (index 0)
 
-        loop_main_menu:
+        MOV R0, 3
+        MOV [PLAY_MEDIA_LOOP], R0        ; Set to intro.wav (index 3)
+
+        loop_main_menu:                  ; Loop until start game key was pressed
             CALL keyboard_listner
-            MOV R0, [LAST_PRESSED_KEY] ; Get last pressed key
+            MOV R0, [EXECUTE_COMMAND]
+            CMP R0, 1
+            JNZ loop_main_menu
+
+            MOV R0, [LAST_PRESSED_KEY]   ; Get last pressed key
             MOV R1, KEY_START_GAME
             CMP R0, R1
-            JNZ loop_main_menu         ; If correct key then end loop to start game
+            JNZ loop_main_menu           ; If correct key then end loop to start game
 
         MOV R0, 3
-        MOV [STOP_MEDIA], R0
+        MOV [STOP_MEDIA], R0             ; Stop intro.wav (index 3)
+
+        MOV R0, 1
+        MOV [PLAY_MEDIA], R0             ; Play beep sound effect (index 1)
 
         POP R0
         POP R1
@@ -577,7 +587,7 @@ event_handler:
         MOV [R2+4], R3                 ; Set sprite index to 0 (visible)
         CALL draw_entity               ; Draw entity reads R2 to draw the probe
 
-        MOV R8, -5 
+        MOV R8, ENERGY_SPEND 
         CALL energy_value_update       ; Probe spends energy (-5%)
 
         MOV R3, 6
@@ -596,7 +606,7 @@ event_handler:
         MOV [SET_FOREGROUND], R4       ; Set foreground as paused_overlay.png (index 1)
         MOV [PLAY_MEDIA], R4           ; Play beep sound effect (index 1)
 
-        pause_loop:                    ; Loops until pause/resume key hasnt been pressed
+        pause_loop:                    ; Loops until pause/resume key or stop key havent been pressed
             CALL keyboard_listner
             MOV R0, [EXECUTE_COMMAND]
             CMP R0, 1
@@ -605,7 +615,7 @@ event_handler:
             MOV R0, [LAST_PRESSED_KEY]
             MOV R1, KEY_STOP_GAME
             CMP R0, R1
-            JZ game_stop
+            JZ game_stop               ; Stop key was pressed
 
             MOV R1, KEY_PAUSE_GAME
             CMP R0, R1
@@ -622,7 +632,7 @@ event_handler:
         JMP end_event_handler
 
     game_stop:
-        MOV [DELETE_FOREGROUND], R4    ; Delete foreground
+        MOV [DELETE_FOREGROUND], R4    ; Delete pause_overlay foreground
 
         MOV R3, 7
         MOV [STOP_MEDIA], R3           ; Stop main theme
@@ -649,7 +659,7 @@ event_handler:
             CMP R0, R1
             JNZ stop_loop
 
-        CALL reset_game                ; Resets the game
+        CALL reset_game                ; Resets the game + goes to main menu
         JMP end_event_handler
 
 ; ***************************************************************************
@@ -801,7 +811,7 @@ update_energy_idling:
     CMP R0, 0
     JZ end_update_energy_idling         ; If 0 means dont update
 
-    MOV R8, -3
+    MOV R8, ENERGY_SPEND_IDLE
     CALL energy_value_update            ; Update energy (-3%)
     MOV R0, 0
     MOV [ENERGY_UPDATE_FLAG], R0        ; Reset update flag
@@ -1031,8 +1041,14 @@ check_asteroid_colision:
         POP R0
         RET
 
-; ------------------------------------------- FALTA COMENTAR DEVIDAMENTE A PARTIR DAQUI -----------------------------------------------------
-; UPDATE ASTEROIDS - Missing colisions
+; ***************************************************************************
+; * UPDATE ASTEROIDS -> - Updates asteroids movement
+;                       - Updates asteroids sprites and renders
+;                       - Regenerates asteroids
+;                       - Updates if asteroid was mined or destroyed
+;                       - Detects colision with ship
+; * _________________________________________________________________________
+; ***************************************************************************
 update_asteroids:
     PUSH R0
     PUSH R1
@@ -1047,128 +1063,132 @@ update_asteroids:
 
     MOV R0, [ASTEROIDS_UPDATE_FLAG]
     CMP R0, 0
-    JZ end_update_asteroids
+    JZ end_update_asteroids              ; Skip update if flag is disabled (flag = 0)    
 
-    MOV R6, 14                   ; Next asteroid offset
-    MOV R0, [ASTEROIDS]          ; Get number of asteroids
+    MOV R6, 14                           ; Next asteroid offset
+    MOV R0, [ASTEROIDS]                  ; Get number of asteroids
     MOV R2, ASTEROIDS
-    ADD R2, 2                    ; Store address of first asteroid (offset by 2)
+    ADD R2, 2                            ; Get Address of first asteroid (offset by 2)
     MOV R5, R0
-    ADD R5, 1                    ; (start at layer 4 which is asteroid 1 and go up in order until layer 8 which is asteroid 4)
+    ADD R5, 1                            ; (start at layer 4 which is asteroid 1 and go up in order until layer 8 which is asteroid 4)
 
     update_asteroids_loop:
         CMP R0, 0
-        JZ end_update_asteroids_loop
+        JZ end_update_asteroids_loop     ; If all asteroid have been updated end loop
 
-        MOV R3, [R2]    ; Current X
-        MOV R4, [R2+2]  ; Current Y
-
-        MOV R1, [R2+8] ; Get amount of steps
-        CMP R1, -1     ; If -1 (not active) then regenerate asteroid
+        MOV R3, [R2]                     ; Current Asteroid X
+        MOV R4, [R2+2]                   ; Current Asteroid Y
+        
+        ; These 3 lines are only executed the first time the game starts
+        MOV R1, [R2+8]                   ; Get amount of steps
+        CMP R1, -1                       ; If -1 (not active) then regenerate asteroid
         JZ regen_asteroid
 
-        MOV R7, [R2+6] ; Get sprite (enemy/friend)
+        MOV R7, [R2+6]                   ; Get sprite (enemy/friend)
         MOV R9, FRIEND_SPRITES
         CMP R7, R9
-        JNZ skip_mine_energy
+        JNZ skip_mine_energy             ; If asteroid is enemy type then skip energy boost
 
-        MOV R7, [R2+4]
+        MOV R7, [R2+4]                   ; Get subsprite index
         CMP R7, -1
-        JZ mine_energy_first_time
+        JZ mine_energy_first_time        ; If index at -1 means asteroid was just mined
         CMP R7, 1
-        JGE mine_energy
+        JGE mine_energy                  ; If index at >= 1 then continue mine animation
 
-        skip_mine_energy:
-            MOV R7, [R2+4] ; Get subsprite
-            CMP R7, 3      ; If subsprite is the destruction sprite then create explosion
+        skip_mine_energy:                ; Asteroid is enemy type
+            MOV R7, [R2+4]               ; Get subsprite
+            CMP R7, 3                    ; If subsprite is the destruction sprite then create explosion
             JZ create_explosion
 
             MOV R7, ASTEROID_MAX_STEPS
-            CMP R1, R7     ; If 31 (y coord reached bottom screen) then set inactive
+            CMP R1, R7                   ; If 31 (y coord reached bottom screen) then set regen asteroid
             JZ regen_asteroid
 
 
         ship_colision:
-            MOV R7, SHIP_HITBOX_LOW_X       ; Hitbox X lower bound
+            MOV R7, SHIP_HITBOX_LOW_X    ; Hitbox X lower bound
             CMP R3, R7
             JLT asteroid_new_coords
             
-            MOV R7, SHIP_HITBOX_HIGH_X      ; Hitbox X higher bound
+            MOV R7, SHIP_HITBOX_HIGH_X   ; Hitbox X higher bound
             CMP R3, R7
             JGT asteroid_new_coords
             
-            MOV R7, SHIP_HITBOX_HIGH_Y      ; Hitbox Y higher bound
+            MOV R7, SHIP_HITBOX_HIGH_Y   ; Hitbox Y higher bound
             CMP R4, R7
             JLT asteroid_new_coords
 
+            ; If flow reached here then asteroid was inside the ships hitbox
             MOV R7, 1
-            MOV [GAME_OVER_FLAG], R7
+            MOV [GAME_OVER_FLAG], R7     ; Turn of game over flag    
 
             MOV R7, 2
-            MOV [SET_BACKGROUND], R7
-            MOV [PLAY_MEDIA], R7
-            JMP end_update_asteroids
+            MOV [SET_BACKGROUND], R7     ; Set background to dead.png (index 2)
+            MOV [PLAY_MEDIA], R7         ; Play game_over.wav (index 2)
+            JMP end_update_asteroids     ; End update routine
 
-        mine_energy_first_time:
+        mine_energy_first_time:          ; This is needed to play sound effect and gain energy only once
             MOV R7, 4
-            MOV [PLAY_MEDIA], R7
-            MOV R7, 1
-            MOV [R2+4], R7
-            MOV R8, 25
-            CALL energy_value_update
-            JMP move_asteroid
-        mine_energy:
-            ADD R7, 1
-            CMP R7, 4
-            JZ regen_asteroid
+            MOV [PLAY_MEDIA], R7         ; Play energy.wav (index 4)
 
-            MOV [R2+4], R7
-            JMP move_asteroid
+            MOV R7, 1
+            MOV [R2+4], R7               ; Begin mining animation (set to 1st keyframe which is subsprite 1)
+
+            MOV R8, ENERGY_GAIN
+            CALL energy_value_update     ; Update energy value with +25
+            JMP move_asteroid            ; Update movement + render
+
+        mine_energy:                     ; Just updates the mining animation
+            ADD R7, 1                    ; Next keyframe
+            CMP R7, 4
+            JZ regen_asteroid            ; If subsprite index reaches 4 then animation is over
+
+            MOV [R2+4], R7               ; Update subsprite in memory
+            JMP move_asteroid            ; Update movement + render
 
 
         create_explosion:
             MOV R7, 2
-            MOV [PLAY_MEDIA], R7
-            MOV R1, -2
+            MOV [PLAY_MEDIA], R7         ; Plays asteroid_explosion.wav (index 1)
+            MOV R1, -2                   ; Set steps to -1 to be regened later (set to -2 to account for ADD in move_asteroid)
             JMP move_asteroid
 
-            
         asteroid_new_coords:
-            MOV R7, [R2+10] ; Direction (-1, 0, 1 -> left, up, right)
-            ADD R3, R7      ; Change X coord
-            ADD R4, 1       ; Move 1 down (Change y coord)
+            MOV R7, [R2+10]              ; Get Direction (-1, 0, 1 -> left, up, right)
+            ADD R3, R7                   ; Change X coord
+            ADD R4, 1                    ; Move 1 down (Change y coord)
             JMP move_asteroid
 
         regen_asteroid:
             MOV R9, 5
             CALL rng_range 
-            CALL column_gen     ; Generates pair (column/direction) 1/5 chance for each combination
+            CALL column_gen              ; Generates pair (column/direction) 1/5 chance for each combination
 
             MOV R9, 100
             CALL rng_range
-            CALL type_gen        ; Generate type (1/4 chance for friend asteroid)
+            CALL type_gen                ; Generate type (1/4 chance for friend asteroid)
             
             MOV R4, 0
-            ; R3 now contains new X coord and R4 contains new Y coord it can now be updated
-            MOV R1, -1           ; Set steps to 0 (ready) (We set to -1 to account for the next ADD)
+            ; R3 now contains new X coord and R4 contains new Y coord
+            MOV R1, -1                   ; Set steps to 0 (ready) (We set to -1 to account for the next ADD in move_asteroid)
             MOV R7, 1
-            MOV [R2+12], R7         ; Set breakable again (probe can interact)
+            MOV [R2+12], R7              ; Set breakable again (probe can interact)
 
         move_asteroid:
-            ADD R1, 1           ; Steps++
-            MOV [R2+8], R1      ; Update steps in memory  
-            MOV [SET_LAYER], R5 ; Get correct layer
+            ADD R1, 1                    ; Steps++
+            MOV [R2+8], R1               ; Update steps in memory  
+            MOV [SET_LAYER], R5          ; Get correct layer
             CALL update_entity
 
         next_iter_asteroids:
-            ADD R5, 1       ; Next asteroid layer
-            ADD R2, R6      ; Offset by 10 to get address of next asteroid
-            SUB R0, 1       ; Decrement iterator (number of asteroids)
+            ADD R5, 1                    ; Next asteroid layer
+            ADD R2, R6                   ; Offset by 10 to get address of next asteroid
+            SUB R0, 1                    ; Decrement iterator (number of asteroids)
             JMP update_asteroids_loop
 
 
     end_update_asteroids_loop:
-        MOV [ASTEROIDS_UPDATE_FLAG], R0 
+        MOV [ASTEROIDS_UPDATE_FLAG], R0  ; Turns off asteroid update flag (R0 = 0)
 
     end_update_asteroids:
         POP R10
@@ -1183,10 +1203,10 @@ update_asteroids:
         POP R0
         RET
 
-
 column_gen:
     PUSH R0
 
+    ; Select correct option (0-4)
     CMP R10, 0
     JLT spawn_left
 
@@ -1203,32 +1223,32 @@ column_gen:
     JLT spawn_middle_right
 
     spawn_left:
-        MOV R3, 0           ; Set x coord to 0
-        MOV R0, 1           ; Set direction to 1 (right)
+        MOV R3, 0               ; Set x coord to 0
+        MOV R0, 1               ; Set direction to 1 (right)
         JMP end_column_gen
 
     spawn_right:
-        MOV R3, 59          ; set x coord to 59
-        MOV R0, -1          ; Set direction to -1 (left)
+        MOV R3, 59              ; set x coord to 59
+        MOV R0, -1              ; Set direction to -1 (left)
         JMP end_column_gen
 
     spawn_middle_down:
-        MOV R3, 30          ; Set x coord to 30 (middle)
-        MOV R0, 0           ; Set direction to 0 (down)
+        MOV R3, 30              ; Set x coord to 30 (middle)
+        MOV R0, 0               ; Set direction to 0 (down)
         JMP end_column_gen
 
     spawn_middle_left:
-        MOV R3, 30          ; Set x coord to 30 (middle)
-        MOV R0, -1          ; Set direction to -1 (left)
+        MOV R3, 30              ; Set x coord to 30 (middle)
+        MOV R0, -1              ; Set direction to -1 (left)
         JMP end_column_gen
 
     spawn_middle_right:
-        MOV R3, 30          ; Set x coord to 30 (middle)
-        MOV R0, 1           ; Set direction to 1 (right)
+        MOV R3, 30              ; Set x coord to 30 (middle)
+        MOV R0, 1               ; Set direction to 1 (right)
         JMP end_column_gen
 
     end_column_gen:
-        MOV [R2+10], R0     ; Update direction
+        MOV [R2+10], R0         ; Update direction
         POP R0
         RET
 
@@ -1237,37 +1257,34 @@ type_gen:
     PUSH R0
 
     MOV R0, 25
-    CMP R10, R0             ; 25percent chance in being friend asteroid
-    JLT spawn_friend
+    CMP R10, R0
+    JLT spawn_friend            ; 25percent chance in being friend asteroid
 
-    MOV R0, ENEMY_SPRITES   ; Set sprite to enemy type
+    MOV R0, ENEMY_SPRITES       ; Set sprite to enemy type
 
     ; Set to enemy type - choose 1 of the 3 different enemy sprites
     MOV R9, 3
-    CALL rng_range          ; Returns random value to R10
-    MOV [R2+4], R10         ; Update new subsprite in memory
+    CALL rng_range              ; Returns random value to R10
+    MOV [R2+4], R10             ; Update new subsprite in memory
 
     JMP end_type_gen
 
     spawn_friend:
         MOV R0, 0
-        MOV [R2+4], R0           ; Set subsprite to default 0
+        MOV [R2+4], R0          ; Set subsprite to default 0
         MOV R0, FRIEND_SPRITES  ; Set sprite to friend type
     
     end_type_gen:
-        MOV [R2+6], R0          ; Apply changes in entity
+        MOV [R2+6], R0          ; Apply sprite changes in entity
         POP R0
         RET
 
 
-;------------------------------------------- COMENTAR DEVIDAMENTE ATÉ AQUI -----------------------------------------------------
 ; ***************************************************************************
-; * ENERGY_VALUE_UPDATE -> Increments or decrements energy
+; * ENERGY_VALUE_UPDATE -> - Increments or decrements energy
+;                          - Checks if ship runs out of energy
 ; * Arguments:
 ; *     R8 -> new energy increment or decrement
-; * _________________________________________________________________________
-; * R8 - Converted energy for displays, sets media options and flags
-; * R9 - New current energy
 ; ***************************************************************************
 energy_value_update:
     PUSH R8
@@ -1300,10 +1317,7 @@ energy_value_update:
 
 
 ; ***************************************************************************
-; * CHECK GAME OVER -> Checks if game needs to end
-; * _________________________________________________________________________
-; * R0 - Execute command flag, sets media options
-; * R1 - last pressed key
+; * CHECK GAME OVER -> Checks if game needs to end    
 ; ***************************************************************************
 check_game_over:
     PUSH R0
@@ -1345,17 +1359,11 @@ check_game_over:
         POP R0
         RET
 
-
 ; ***************************************************************************
-; * RESET GAME -> Resets the game and put everything ready to restart
+; * RESET GAME -> - Resets the game, variables, entities, etc..
+;                 - Calls main menu loop
 ; * Arguments:
 ; *     R4 -> new energy increment or decrement
-; * _________________________________________________________________________
-; * R0 - Sets media options, number of a certain entity, Layer, updates
-; * R1 - updates, offsets
-; * R2 - Base address of entities
-; * R3 - home x of a probe
-; * R4 - home y of a probe
 ; ***************************************************************************
 reset_game:
     PUSH R0
@@ -1365,8 +1373,8 @@ reset_game:
     PUSH R4
 
     MOV [CLEAR_SCREEN], R0              ; Clear screen
-    MOV R0, 1
-    MOV [PLAY_MEDIA], R0                ; Play beep sound effect (index 1)
+
+    CALL main_menu                      ; Starts main menu loop
 
     MOV R0, [ASTEROIDS]                 ; Get number of asteroids
     MOV R2, ASTEROIDS
@@ -1385,14 +1393,12 @@ reset_game:
         SUB R0, 1                       ; Decrement loop iterator
         JMP reset_asteroids             ; Continue loop
 
-
     reset_spaceship:
         MOV R0, LAYER_SPACESHIP
         MOV [SET_LAYER], R0             ; Set correct layer for spaceship
 
         MOV R2, SPACESHIP
         CALL draw_entity                ; Get address of spaceship and draw it
-
 
     MOV R0, [PROBES]                    ; Get number of probes
     MOV R2, PROBES
@@ -1417,10 +1423,9 @@ reset_game:
         SUB R0, 1                       ; Decrement loop iterator
         JMP reset_probes                ; Continue loop
 
-
     reset_rest:
         MOV R0, 7
-        MOV [PLAY_MEDIA_LOOP], R0       ; Start main theme
+        MOV [PLAY_MEDIA_LOOP], R0       ; Start main_theme.mp3
 
         MOV R0, 100H
         MOV [ENERGY_DISPLAYS], R0       ; Update energy display
@@ -1445,7 +1450,6 @@ reset_game:
         POP R1
         POP R0
         RET
-
 
 ; ***************************************************************************
 ; * HEX TO DEC -> Returns a converted hexadecimal to decimal (change of base)
@@ -1488,7 +1492,6 @@ hex_to_dec:
     POP R1
     RET
 
-
 ; ***************************************************************************
 ; * RNG RANGE -> Generates random value between 0 and N-1 (R9 = N)
 ; * Arguments:
@@ -1500,10 +1503,8 @@ hex_to_dec:
 ; ***************************************************************************
 rng_range:
     MOV R10, [PIN_IN]      ; Read bits from "air" (PIN)
-    ;SHR R10, 4            ; Put bits in low nibble
     MOD R10, R9            ; Mod by the argument passed by R9
     RET
-
 
 ; ***************************************************************************
 ; * EXCEPTION ROUTINES
