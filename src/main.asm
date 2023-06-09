@@ -1354,7 +1354,7 @@ reset_game:
         MOV R1, -1
         MOV [R2+8], R1                  ; Set each asteroid state to -1 (invisible and ready to regen)
 
-        MOV R1, 12            
+        MOV R1, 14            
         ADD R2, R1                      ; Get address of next asteroid (offset by 12)
 
         SUB R0, 1                       ; Decrement loop iterator
