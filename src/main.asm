@@ -112,7 +112,7 @@ SP_INICIAL:
 LAST_PRESSED_KEY:
     WORD -1                            ; Start with default value   
 
-; Used together with LAST_KEY_PRESSED to determine when to execute a command
+; Used together with LAST_KEY_PRESSED to determine when to execute a command (Used like a LOCK)
 ; 0 -> dont execute; 1 -> execute; -1 -> dont execute [key was not released]
 EXECUTE_COMMAND:
     WORD 0
@@ -395,11 +395,9 @@ start:
         RET
 
 ; ***************************************************************************
-; * KEYBOARD LISTNER -> Listens to keyboard input
+; * KEYBOARD LISTNER -> - Listens to keyboard input
+;                       - Locks command execution if key was not released
 ; * _________________________________________________________________________
-; * R0 - Current column, execute command flag
-; * R1 - Current line, Converted key, execute command flag 
-; * R4 - Number of max lines (each bit is a line so 4 lines = 4bits -> 8)
 ; ***************************************************************************
 keyboard_listner:
     PUSH R0
@@ -427,18 +425,18 @@ keyboard_listner:
         RET
 
 test_line: 
-    PUSH R2                   ; keyboard Line address, Mask
-    PUSH R3                   ; keyboard column address
+    PUSH R2                     ; keyboard Line address, Mask
+    PUSH R3                     ; keyboard column address
 
     ; read from keyboard addresses
     MOV R2, KEYBOARD_LINE
     MOV R3, KEYBOARD_COLUMN
-    MOVB [R2], R1             ; activate line
-    MOVB R0, [R3]             ; read colmuns
+    MOVB [R2], R1               ; activate line
+    MOVB R0, [R3]               ; read colmuns
 
     MOV R2, MASK
-    AND R0, R2                ; Get low nibble only with MASK -> R0 is the column
-    CMP R0, 0                 ; Update State Register for later
+    AND R0, R2                  ; Get low nibble only with MASK -> R0 is the column
+    CMP R0, 0                   ; Update State Register for later
 
     POP R3
     POP R2
@@ -496,11 +494,6 @@ convert_to_key_aux:
 ; ***************************************************************************
 ; * EVENT_HANDLER -> handles keyboard events
 ; * _________________________________________________________________________
-; * R0 - Execute command flag, last pressed key
-; * R1 - Key ID for each event
-; * R2 - Base address of entities
-; * R3 - Offsets, sets media options, entity properties
-; * R4 - Pixel Layer IDs, sets media options
 ; ***************************************************************************
 event_handler:
     PUSH R0
@@ -670,7 +663,6 @@ event_handler:
 ; *     - R4 -> New y coordinate
 ; *     - R5 -> Pixel Layer ID
 ; * _________________________________________________________________________
-; * R0 - Checks subsprite_index of entity 
 ; ***************************************************************************
 update_entity:
     PUSH R0
@@ -691,17 +683,10 @@ update_entity:
         RET
 
 ; ***************************************************************************
-; * DRAW ENTITY -> Draws an entity
+; * DRAW ENTITY -> Draws an entity to the screen
 ; * Arguments
 ; *     - R2 -> Base address of entity
 ; * _________________________________________________________________________
-; R0 - Entity base address
-; R1 - Sprite base address
-; R2 - Length of sprite, current x pos
-; R3 - Height of sprite, current y pos
-; R5 - Sprite Table y pos
-; R6 - Sprite Table x pos
-; R7 - Address of pixel color
 ; ***************************************************************************
 draw_entity:
     PUSH R0
@@ -798,10 +783,8 @@ check_pixel_address:
     RET
 
 ; ***************************************************************************
-; * UPDATE_ENERGY_IDLING -> Updates energy while ship idling
+; * UPDATE_ENERGY_IDLING -> Updates energy while ship is idling
 ; * _________________________________________________________________________
-; * R0 - Energy update flag
-; * R4 - Increment or decrement for energy
 ; ***************************************************************************
 update_energy_idling:
     PUSH R0
@@ -824,8 +807,6 @@ update_energy_idling:
 ; ***************************************************************************
 ; * UPDATE_PANEL -> Animates spaceship panel
 ; * _________________________________________________________________________
-; * R0 - flags, updates, Pixel layer ID, other values
-; * R2 - Base address of spaceship panel
 ; ***************************************************************************
 update_panel:
     PUSH R0
@@ -860,17 +841,9 @@ update_panel:
         RET
 
 ; ***************************************************************************
-; * UPDATE_PROBES -> Updates movement, checks colisions, rendering
+; * UPDATE_PROBES -> - Updates movement, checks colisions, renders probes
+;                    - Moves probes to initial position
 ; * _________________________________________________________________________
-; * R0 - Probes update flag, number of probes
-; * R1 - Number of steps of a probe
-; * R2 - Base address of Probes
-; * R3 - Probe Current X
-; * R4 - Probe Current Y
-; * R5 - Pixel Layer ID
-; * R6 - Next probe memory offset
-; * R7 - Used to Compare some values
-; * R10 - Colision Flag
 ; ***************************************************************************
 update_probes:
     PUSH R0
@@ -964,11 +937,6 @@ update_probes:
 ; * Returns:
 ; *     - R10 -> Colision flag
 ; * _________________________________________________________________________
-; * R0 - number of asteroids
-; * R1 - Next asteroid offset
-; * R2 - Base address of Asteroids
-; * R6 - Asteroid current X
-; * R7 - Asteroid current Y, sets entity properties
 ; ***************************************************************************
 check_asteroid_colision:
     PUSH R0
@@ -1203,6 +1171,7 @@ update_asteroids:
         POP R0
         RET
 
+; Generates "Randomly" Column to spawn
 column_gen:
     PUSH R0
 
@@ -1252,7 +1221,7 @@ column_gen:
         POP R0
         RET
 
-
+; Generates "Randomly" Asteroid type and subsprite
 type_gen:
     PUSH R0
 
@@ -1285,6 +1254,7 @@ type_gen:
 ;                          - Checks if ship runs out of energy
 ; * Arguments:
 ; *     R8 -> new energy increment or decrement
+; * _________________________________________________________________________
 ; ***************************************************************************
 energy_value_update:
     PUSH R8
@@ -1317,7 +1287,8 @@ energy_value_update:
 
 
 ; ***************************************************************************
-; * CHECK GAME OVER -> Checks if game needs to end    
+; * CHECK GAME OVER -> Checks if game needs to end
+; * _________________________________________________________________________
 ; ***************************************************************************
 check_game_over:
     PUSH R0
@@ -1364,6 +1335,7 @@ check_game_over:
 ;                 - Calls main menu loop
 ; * Arguments:
 ; *     R4 -> new energy increment or decrement
+; * _________________________________________________________________________
 ; ***************************************************************************
 reset_game:
     PUSH R0
@@ -1458,6 +1430,7 @@ reset_game:
 ; * _________________________________________________________________________
 ; * Returns:
 ; *     R8 -> Converted Value
+; * _________________________________________________________________________
 ; ***************************************************************************
 hex_to_dec:
     PUSH R1
@@ -1508,6 +1481,7 @@ rng_range:
 
 ; ***************************************************************************
 ; * EXCEPTION ROUTINES
+; * _________________________________________________________________________
 ; ***************************************************************************
 asteroids_exception:
     PUSH R0
